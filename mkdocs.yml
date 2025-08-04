@@ -1,0 +1,52 @@
+site_name: hypershap
+repo_url: https://github.com/mwever/hypershap
+site_url: https://mwever.github.io/hypershap
+site_description: HyperSHAP is a post-hoc explanation method for hyperparameter optimization.
+site_author: Marcel Wever
+edit_uri: edit/main/docs/
+repo_name: mwever/hypershap
+copyright: Maintained by <a href="https://mwever.com">mwever</a>.
+
+nav:
+  - Home: index.md
+  - Modules: modules.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["src/hypershap"]
+theme:
+  name: material
+  feature:
+    tabs: true
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/mwever/hypershap
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/hypershap
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
