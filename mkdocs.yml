@@ -1,11 +1,11 @@
 site_name: hypershap
-repo_url: https://github.com/mwever/hypershap
-site_url: https://mwever.github.io/hypershap
+repo_url: https://github.com/automl/hypershap
+site_url: https://automl.github.io/hypershap
 site_description: HyperSHAP is a post-hoc explanation method for hyperparameter optimization.
 site_author: Marcel Wever
 edit_uri: edit/main/docs/
-repo_name: mwever/hypershap
-copyright: Maintained by <a href="https://mwever.com">mwever</a>.
+repo_name: automl/hypershap
+copyright: Maintained by <a href="https://ai.uni-hannover.de">LUH-AI</a>.
 
 nav:
   - Home: index.md
