@@ -1,14 +1,24 @@
-from typing import Optional
+"""HyperSHAP main interface to work on explanation for a given task.
+
+This module provides the main interface for working with HyperSHAP to access explanations regarding ablation, tunability,
+sensitivity, and optimizer bias.
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ConfigSpace import Configuration
+
+    from hypershap.utils import ConfigSpaceSearcher
+
+import logging
 
 import matplotlib.pyplot as plt
-from ConfigSpace import Configuration
 from shapiq import ExactComputer, InteractionValues
 
-from hypershap.games.ablation import AblationGame
-from hypershap.games.abstract import AbstractHPIGame
-from hypershap.games.optimizerbias import OptimizerBiasGame
-from hypershap.games.tunability import TunabilityGame
-from hypershap.optimizer import Optimizer
+from hypershap.games import AblationGame, AbstractHPIGame, OptimizerBiasGame, TunabilityGame
 from hypershap.task import (
     AblationExplanationTask,
     ExplanationTask,
@@ -16,31 +26,83 @@ from hypershap.task import (
     TunabilityExplanationTask,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class NoInteractionValuesError(ValueError):
     """Exception raised when no interaction values are present for plotting."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize the no interaction values error."""
         super().__init__("No interaction values present for plotting.")
 
 
 class HyperSHAP:
-    def __init__(self, explanation_task: ExplanationTask):
+    """A class for computing and visualizing HyperSHAP Shapley values and interactions.
+
+    Attributes:
+        explanation_task (ExplanationTask): The task responsible for generating explanations.
+        last_interaction_values (InteractionValues | None): The cached interaction values for plotting shortcuts.
+
+    Methods:
+        __init__(explanation_task: ExplanationTask):
+            Initializes the HyperSHAP instance with an explanation task.
+
+        ablation(config_of_interest: Configuration, baseline_config: Configuration, index: str = "FSII", order: int = 2) -> InteractionValues:
+            Computes and returns the interaction values for ablation analysis.
+
+        tunability(baseline_config: Configuration | None, index: str = "FSII", order: int = 2) -> InteractionValues:
+            Computes and returns the interaction values for tunability analysis.
+
+        optimizer_bias(optimizer_of_interest: ConfigSpaceSearcher, optimizer_ensemble: list[ConfigSpaceSearcher], index: str = "FSII", order: int = 2) -> InteractionValues:
+            Computes and returns the interaction values for optimizer bias analysis.
+
+        plot_si_graph(interaction_values: InteractionValues | None = None, save_path: str | None = None):
+            Plots the SHAP interaction values as a graph.
+
+    """
+
+    def __init__(self, explanation_task: ExplanationTask) -> None:
+        """Initialize the HyperSHAP instance with an explanation task.
+
+        Args:
+            explanation_task (ExplanationTask): The task responsible for generating explanations.
+
+        """
         self.explanation_task = explanation_task
         self.last_interaction_values = None
 
-    def __get_interaction_values(self, game: AbstractHPIGame, index: str = "FSII", order: int = 2):
+    def __get_interaction_values(self, game: AbstractHPIGame, index: str = "FSII", order: int = 2) -> InteractionValues:
         # instantiate exact computer if number of hyperparameters is small enough
         ec = ExactComputer(n_players=game.get_num_hyperparameters(), game=game)
 
         # compute interaction values with the given index and order
         interaction_values = ec(index=index, order=order)
 
+        # cache current interaction values for plotting shortcuts
+        self.last_interaction_values = interaction_values
+
         return interaction_values
 
     def ablation(
-        self, config_of_interest: Configuration, baseline_config: Configuration, index: str = "FSII", order: int = 2
+        self,
+        config_of_interest: Configuration,
+        baseline_config: Configuration,
+        index: str = "FSII",
+        order: int = 2,
     ) -> InteractionValues:
+        """Compute and return the interaction values for ablation analysis.
+
+        Args:
+            config_of_interest (Configuration): The configuration of interest.
+            baseline_config (Configuration): The baseline configuration.
+            index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
+            order (int, optional): The order of the interaction values. Defaults to 2.
+
+        Returns:
+            InteractionValues: The computed interaction values.
+
+        """
         # setup explanation task
         ablation_task: AblationExplanationTask = AblationExplanationTask(
             config_space=self.explanation_task.config_space,
@@ -51,16 +113,25 @@ class HyperSHAP:
 
         # setup ablation game and get interaction values
         ag = AblationGame(explanation_task=ablation_task)
-        interaction_values = self.__get_interaction_values(game=ag, index=index, order=order)
-
-        # cache current interaction values for plotting shortcuts
-        self.last_interaction_values = interaction_values
-
-        return interaction_values
+        return self.__get_interaction_values(game=ag, index=index, order=order)
 
     def tunability(
-        self, baseline_config: Configuration = None, index: str = "FSII", order: int = 2
+        self,
+        baseline_config: Configuration = None,
+        index: str = "FSII",
+        order: int = 2,
     ) -> InteractionValues:
+        """Compute and return the interaction values for tunability analysis.
+
+        Args:
+            baseline_config (Configuration | None, optional): The baseline configuration. Defaults to None.
+            index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
+            order (int, optional): The order of the interaction values. Defaults to 2.
+
+        Returns:
+            InteractionValues: The computed interaction values.
+
+        """
         # setup explanation task
         tunability_task: TunabilityExplanationTask = TunabilityExplanationTask(
             config_space=self.explanation_task.config_space,
@@ -70,16 +141,27 @@ class HyperSHAP:
 
         # setup tunability game and get interaction values
         tg = TunabilityGame(explanation_task=tunability_task)
-        interaction_values = self.__get_interaction_values(game=tg, index=index, order=order)
-
-        # cache current interaction values for plotting shortcuts
-        self.last_interaction_values = interaction_values
-
-        return interaction_values
+        return self.__get_interaction_values(game=tg, index=index, order=order)
 
     def optimizer_bias(
-        self, optimizer_of_interest: Optimizer, optimizer_ensemble: list[Optimizer], index: str = "FSII", order: int = 2
+        self,
+        optimizer_of_interest: ConfigSpaceSearcher,
+        optimizer_ensemble: list[ConfigSpaceSearcher],
+        index: str = "FSII",
+        order: int = 2,
     ) -> InteractionValues:
+        """Compute and return the interaction values for optimizer bias analysis.
+
+        Args:
+            optimizer_of_interest (ConfigSpaceSearcher): The optimizer of interest.
+            optimizer_ensemble (list[ConfigSpaceSearcher]): The ensemble of optimizers.
+            index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
+            order (int, optional): The order of the interaction values. Defaults to 2.
+
+        Returns:
+            InteractionValues: The computed interaction values.
+
+        """
         # setup explanation task
         optimizer_bias_task: OptimizerBiasExplanationTask = OptimizerBiasExplanationTask(
             config_space=self.explanation_task.config_space,
@@ -90,16 +172,18 @@ class HyperSHAP:
 
         # setup optimizer bias game and get interaction values
         og = OptimizerBiasGame(explanation_task=optimizer_bias_task)
-        interaction_values = self.__get_interaction_values(hpi_game=og, index=index, order=2)
+        return self.__get_interaction_values(hpi_game=og, index=index, order=order)
 
-        # cache current interaction values for plotting shortcuts
-        self.last_interaction_values = interaction_values
+    def plot_si_graph(self, interaction_values: InteractionValues | None = None, save_path: str | None = None) -> None:
+        """Plot the SHAP interaction values as a graph.
 
-        return interaction_values
+        Args:
+            interaction_values (InteractionValues | None, optional): The interaction values to plot. Defaults to None.
+            save_path (str | None, optional): The path to save the plot. Defaults to None.
 
-    def plot_si_graph(self, interaction_values: Optional[InteractionValues] = None, save_path: Optional[str] = None):
+        """
         if interaction_values is None and self.last_interaction_values is None:
-            raise NoInteractionValuesError()
+            raise NoInteractionValuesError
 
         # if given interaction values use those, else use cached interaction values
         iv = interaction_values if interaction_values is not None else self.last_interaction_values
@@ -107,7 +191,7 @@ class HyperSHAP:
 
         import networkx as nx
 
-        def get_circular_layout(n_players: int):
+        def get_circular_layout(n_players: int) -> dict:
             original_graph, graph_nodes = nx.Graph(), []
             for i in range(n_players):
                 original_graph.add_node(i, label=i)
@@ -127,6 +211,6 @@ class HyperSHAP:
 
         if save_path is not None:
             plt.savefig(save_path)
-            print(f"Saved SI graph to {save_path}")
+            logger.info("Saved SI graph to %s", save_path)
 
         plt.show()

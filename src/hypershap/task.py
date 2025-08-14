@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from ConfigSpace import Configuration, ConfigurationSpace
     from sklearn.base import BaseEstimator
 
-    from hypershap.optimizer import Optimizer
+    from hypershap import ConfigSpaceSearcher
 
 from sklearn.ensemble import RandomForestRegressor
 
@@ -223,8 +223,8 @@ class OptimizerBiasExplanationTask(ExplanationTask):
         self,
         config_space: ConfigurationSpace,
         surrogate_model: SurrogateModel,
-        optimizer_of_interest: Optimizer,
-        optimizer_ensemble: list[Optimizer],
+        optimizer_of_interest: ConfigSpaceSearcher,
+        optimizer_ensemble: list[ConfigSpaceSearcher],
     ) -> None:
         """Initialize an OptimizerBiasExplanationTask.
 

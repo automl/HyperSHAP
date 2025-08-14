@@ -37,7 +37,6 @@ class SurrogateModel(ABC):
         """
         self.config_space = config_space
 
-    @abstractmethod
     def evaluate_config(self, config: Configuration) -> float:
         """Evaluate a single configuration using the surrogate model.
 
@@ -48,8 +47,8 @@ class SurrogateModel(ABC):
             The predicted performance for the given configuration.
 
         """
+        return self.evaluate(np.array(config.get_array()))
 
-    @abstractmethod
     def evaluate_config_batch(self, config_batch: list[Configuration]) -> list[float]:
         """Evaluate a batch of configurations using the surrogate model.
 
@@ -60,6 +59,7 @@ class SurrogateModel(ABC):
             A list of predicted performances for the given configurations.
 
         """
+        return self.evaluate(np.array([config.get_array() for config in config_batch]))
 
     @abstractmethod
     def evaluate(self, config_array: np.ndarray) -> float | list[float]:
