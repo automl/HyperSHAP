@@ -25,6 +25,7 @@ from hypershap.task import (
     OptimizerBiasExplanationTask,
     TunabilityExplanationTask,
 )
+from hypershap.utils import RandomConfigSpaceSearcher
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +121,7 @@ class HyperSHAP:
         baseline_config: Configuration = None,
         index: str = "FSII",
         order: int = 2,
+        n_samples: int = 10_000,
     ) -> InteractionValues:
         """Compute and return the interaction values for tunability analysis.
 
@@ -127,6 +129,7 @@ class HyperSHAP:
             baseline_config (Configuration | None, optional): The baseline configuration. Defaults to None.
             index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
             order (int, optional): The order of the interaction values. Defaults to 2.
+            n_samples (int, optional): The number of samples to use for simulating HPO. Defaults to 10_000.
 
         Returns:
             InteractionValues: The computed interaction values.
@@ -140,7 +143,14 @@ class HyperSHAP:
         )
 
         # setup tunability game and get interaction values
-        tg = TunabilityGame(explanation_task=tunability_task)
+        tg = TunabilityGame(
+            explanation_task=tunability_task,
+            cs_searcher=RandomConfigSpaceSearcher(
+                explanation_task=tunability_task,
+                n_samples=n_samples,
+                mode="max",
+            ),
+        )
         return self.__get_interaction_values(game=tg, index=index, order=order)
 
     def optimizer_bias(
@@ -172,7 +182,7 @@ class HyperSHAP:
 
         # setup optimizer bias game and get interaction values
         og = OptimizerBiasGame(explanation_task=optimizer_bias_task)
-        return self.__get_interaction_values(hpi_game=og, index=index, order=order)
+        return self.__get_interaction_values(game=og, index=index, order=order)
 
     def plot_si_graph(self, interaction_values: InteractionValues | None = None, save_path: str | None = None) -> None:
         """Plot the SHAP interaction values as a graph.

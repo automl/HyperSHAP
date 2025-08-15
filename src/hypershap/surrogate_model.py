@@ -16,9 +16,6 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import OrdinalEncoder
 
 
 class SurrogateModel(ABC):
@@ -128,6 +125,7 @@ class ModelBasedSurrogateModel(SurrogateModel):
         predictions = self.base_model.predict(config_array)
         if predictions.shape == (1,):  # Check for a 1-element array (scalar)
             return float(predictions[0])  # Convert to a Python float
+
         return predictions.tolist()  # Convert to a Python list
 
 
@@ -156,10 +154,7 @@ class DataBasedSurrogateModel(ModelBasedSurrogateModel):
         if base_model is None:
             base_model = RandomForestRegressor()
 
-        pipeline = make_pipeline(
-            OrdinalEncoder(categories="auto", handle_unknown="use_encoded_value", unknown_value=np.nan),
-            SimpleImputer(missing_values=np.nan, strategy="median"),
-            base_model,
-        )
+        pipeline = base_model
         pipeline.fit(train_x, train_y)
+
         super().__init__(config_space, pipeline)
