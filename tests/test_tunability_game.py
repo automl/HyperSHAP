@@ -8,9 +8,9 @@ from __future__ import annotations
 import numpy as np
 from ConfigSpace import ConfigurationSpace
 
-from hypershap.games.tunability import RandomSearchMaxApproximator
 from hypershap.surrogate_model import SurrogateModel
 from hypershap.task import TunabilityExplanationTask
+from hypershap.utils import RandomConfigSpaceSearcher
 
 
 class MockupSurrogateModel(SurrogateModel):
@@ -53,12 +53,12 @@ class MockupSurrogateModel(SurrogateModel):
         return vals.tolist()  # Convert to a Python list
 
 
-def test_random_search_max_approximator() -> None:
-    """Test the RandomSearchMaxApproximator class.
+def test_config_space_searcher() -> None:
+    """Test the RandomConfigSpaceSearcher class.
 
     This function creates an instance of ConfigurationSpace, MockupSurrogateModel,
     and TunabilityExplanationTask, then uses these instances to create an
-    instance of RandomSearchMaxApproximator.
+    instance of RandomConfigSpaceSearcher.
 
     Args:
         None
@@ -81,5 +81,8 @@ def test_random_search_max_approximator() -> None:
     baseline_config = cs.sample_configuration()
 
     tet = TunabilityExplanationTask(config_space=cs, surrogate_model=surrogate_model, baseline_config=baseline_config)
-    rsma = RandomSearchMaxApproximator(tet, n_samples=5)
-    rsma.search(np.array([True, False]))
+    rccs = RandomConfigSpaceSearcher(tet, n_samples=1_000)
+    res = rccs.search(np.array([True, True]))
+
+    assert res is not None, "No result has been returned by RandomConfigSpaceSearcher."
+    assert res >= surrogate_model.evaluate_config(baseline_config), "Returned value is worse than baseline config."

@@ -9,8 +9,10 @@ from __future__ import annotations
 
 from .hypershap import HyperSHAP
 from .task import ExplanationTask
+from .utils import ConfigSpaceSearcher
 
 __all__ = [
+    "ConfigSpaceSearcher",
     "ExplanationTask",
     "HyperSHAP",
 ]
