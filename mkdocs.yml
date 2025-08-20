@@ -1,21 +1,27 @@
-site_name: hypershap
-repo_url: https://github.com/mwever/hypershap
-site_url: https://mwever.github.io/hypershap
+site_name: HyperSHAP
+repo_url: https://github.com/automl/HyperSHAP
+site_url: https://automl.github.io/HyperSHAP
 site_description: HyperSHAP is a post-hoc explanation method for hyperparameter optimization.
 site_author: Marcel Wever
 edit_uri: edit/main/docs/
-repo_name: mwever/hypershap
-copyright: Maintained by <a href="https://mwever.com">mwever</a>.
+repo_name: automl/HyperSHAP
+copyright: Maintained by <a href="https://ai.uni-hannover.de">LUH-AI</a>.
 
 nav:
   - Home: index.md
   - Modules: modules.md
+
+docs_dir: docs
+
 plugins:
   - search
   - mkdocstrings:
       handlers:
         python:
-          paths: ["src/hypershap"]
+          paths: [src]
+          options:
+            show_source: true
+            docstring_style: google
 theme:
   name: material
   feature:
@@ -41,7 +47,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/mwever/hypershap
+      link: https://github.com/automl/hypershap
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/hypershap
 
