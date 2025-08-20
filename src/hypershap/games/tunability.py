@@ -35,7 +35,13 @@ logger = logging.getLogger(__name__)
 class SearchBasedGame(AbstractHPIGame):
     """Base class for games that rely on searching the configuration space."""
 
-    def __init__(self, explanation_task: TunabilityExplanationTask, cs_searcher: ConfigSpaceSearcher = None) -> None:
+    def __init__(
+        self,
+        explanation_task: TunabilityExplanationTask,
+        cs_searcher: ConfigSpaceSearcher = None,
+        n_workers: int | None = None,
+        verbose: bool | None = None,
+    ) -> None:
         """Initialize the search-based game.
 
         Args:
@@ -43,10 +49,16 @@ class SearchBasedGame(AbstractHPIGame):
                 space and surrogate model.
             cs_searcher: The configuration space searcher. If None, a
                 RandomConfigSpaceSearcher is used by default.
+            n_workers: The number of worker threads to use for parallel evaluation
+                of coalitions. Defaults to None meaning no parallelization.  Using more workers can significantly
+                speed up the computation of Shapley values.  The maximum number of workers is capped by the number of coalitions.
+            verbose:  A boolean indicating whether to print verbose messages during
+                computation. Defaults to None.  When set to True, the method prints
+                debugging information and progress updates.
 
         """
         self.cs_searcher = cs_searcher
-        super().__init__(explanation_task)
+        super().__init__(explanation_task, n_workers=n_workers, verbose=verbose)
 
     def evaluate_single_coalition(self, coalition: np.ndarray) -> float:
         """Evaluate the value of a single coalition using the configuration space searcher.
@@ -65,7 +77,13 @@ class SearchBasedGame(AbstractHPIGame):
 class TunabilityGame(SearchBasedGame):
     """Game representing the tunability of hyperparameters."""
 
-    def __init__(self, explanation_task: TunabilityExplanationTask, cs_searcher: ConfigSpaceSearcher = None) -> None:
+    def __init__(
+        self,
+        explanation_task: TunabilityExplanationTask,
+        cs_searcher: ConfigSpaceSearcher = None,
+        n_workers: int | None = None,
+        verbose: bool | None = None,
+    ) -> None:
         """Initialize the tunability game.
 
         Args:
@@ -73,6 +91,12 @@ class TunabilityGame(SearchBasedGame):
                 space and surrogate model.
             cs_searcher: The configuration space searcher. If None, a
                 RandomConfigSpaceSearcher is used by default.
+            n_workers: The number of worker threads to use for parallel evaluation
+                of coalitions. Defaults to None meaning no parallelization.  Using more workers can significantly
+                speed up the computation of Shapley values.  The maximum number of workers is capped by the number of coalitions.
+            verbose:  A boolean indicating whether to print verbose messages during
+                computation. Defaults to None.  When set to True, the method prints
+                debugging information and progress updates.
 
         """
         # set cs searcher if not given by default to a random config space searcher.
@@ -81,13 +105,19 @@ class TunabilityGame(SearchBasedGame):
         elif cs_searcher.mode != "max":  # ensure that cs_searcher is maximizing
             logger.warning("WARN: Tunability game set mode of given ConfigSpaceSearcher to maximize.")
             cs_searcher.mode = "max"
-        super().__init__(explanation_task, cs_searcher)
+        super().__init__(explanation_task, cs_searcher, n_workers=n_workers, verbose=verbose)
 
 
 class SensitivityGame(SearchBasedGame):
     """Game representing the sensitivity of hyperparameters."""
 
-    def __init__(self, explanation_task: TunabilityExplanationTask, cs_searcher: ConfigSpaceSearcher = None) -> None:
+    def __init__(
+        self,
+        explanation_task: TunabilityExplanationTask,
+        cs_searcher: ConfigSpaceSearcher = None,
+        n_workers: int | None = None,
+        verbose: bool | None = None,
+    ) -> None:
         """Initialize the sensitivity game.
 
         Args:
@@ -95,6 +125,12 @@ class SensitivityGame(SearchBasedGame):
                 space and surrogate model.
             cs_searcher: The configuration space searcher. If None, a
                 RandomConfigSpaceSearcher is used by default.
+            n_workers: The number of worker threads to use for parallel evaluation
+                of coalitions. Defaults to None meaning no parallelization.  Using more workers can significantly
+                speed up the computation of Shapley values.  The maximum number of workers is capped by the number of coalitions.
+            verbose:  A boolean indicating whether to print verbose messages during
+                computation. Defaults to None.  When set to True, the method prints
+                debugging information and progress updates.
 
         """
         # set cs searcher if not given by default to a random config space searcher.
@@ -104,13 +140,19 @@ class SensitivityGame(SearchBasedGame):
             logger.warning("WARN: Sensitivity game set mode of given ConfigSpaceSearcher to variance.")
             cs_searcher.mode = "var"
 
-        super().__init__(explanation_task, cs_searcher)
+        super().__init__(explanation_task, cs_searcher, n_workers=n_workers, verbose=verbose)
 
 
 class MistunabilityGame(TunabilityGame):
     """Game representing the mistunability of hyperparameters."""
 
-    def __init__(self, explanation_task: TunabilityExplanationTask, cs_searcher: ConfigSpaceSearcher = None) -> None:
+    def __init__(
+        self,
+        explanation_task: TunabilityExplanationTask,
+        cs_searcher: ConfigSpaceSearcher = None,
+        n_workers: int | None = None,
+        verbose: bool | None = None,
+    ) -> None:
         """Initialize the mistunability game.
 
         Args:
@@ -118,6 +160,12 @@ class MistunabilityGame(TunabilityGame):
                 space and surrogate model.
             cs_searcher: The configuration space searcher. If None, a
                 RandomConfigSpaceSearcher is used by default.
+            n_workers: The number of worker threads to use for parallel evaluation
+                of coalitions. Defaults to None meaning no parallelization.  Using more workers can significantly
+                speed up the computation of Shapley values.  The maximum number of workers is capped by the number of coalitions.
+            verbose:  A boolean indicating whether to print verbose messages during
+                computation. Defaults to None.  When set to True, the method prints
+                debugging information and progress updates.
 
         """
         # set cs searcher if not given by default to a random config space searcher.
@@ -127,4 +175,4 @@ class MistunabilityGame(TunabilityGame):
             logger.warning("WARN: Mistunability game set mode of given ConfigSpaceSearcher to minimize.")
             cs_searcher.mode = "min"
 
-        super().__init__(explanation_task, cs_searcher)
+        super().__init__(explanation_task, cs_searcher, n_workers=n_workers, verbose=verbose)

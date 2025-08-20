@@ -182,18 +182,24 @@ class AblationExplanationTask(BaselineExplanationTask):
         self.config_of_interest = config_of_interest
 
 
-class SensitivityExplanationTask(ExplanationTask):
+class SensitivityExplanationTask(BaselineExplanationTask):
     """Defines a sensitivity explanation task."""
 
-    def __init__(self, config_space: ConfigurationSpace, surrogate_model: SurrogateModel) -> None:
+    def __init__(
+        self,
+        config_space: ConfigurationSpace,
+        surrogate_model: SurrogateModel,
+        baseline_config: Configuration,
+    ) -> None:
         """Initialize a SensitivityExplanationTask.
 
         Args:
             config_space: The configuration space.
             surrogate_model: The surrogate model.
+            baseline_config: The baseline configuration.
 
         """
-        super().__init__(config_space, surrogate_model)
+        super().__init__(config_space, surrogate_model, baseline_config)
 
 
 class TunabilityExplanationTask(BaselineExplanationTask):
@@ -206,6 +212,26 @@ class TunabilityExplanationTask(BaselineExplanationTask):
         baseline_config: Configuration,
     ) -> None:
         """Initialize a TunabilityExplanationTask.
+
+        Args:
+            config_space: The configuration space.
+            surrogate_model: The surrogate model.
+            baseline_config: The baseline configuration.
+
+        """
+        super().__init__(config_space, surrogate_model, baseline_config)
+
+
+class MistunabilityExplanationTask(BaselineExplanationTask):
+    """Defines a mistunability explanation task."""
+
+    def __init__(
+        self,
+        config_space: ConfigurationSpace,
+        surrogate_model: SurrogateModel,
+        baseline_config: Configuration,
+    ) -> None:
+        """Initialize a MistunabilityExplanationTask.
 
         Args:
             config_space: The configuration space.

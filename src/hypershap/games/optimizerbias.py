@@ -53,12 +53,24 @@ class OptimizerBiasGame(AbstractHPIGame):
 
     """
 
-    def __init__(self, explanation_task: OptimizerBiasExplanationTask) -> None:
+    def __init__(
+        self,
+        explanation_task: OptimizerBiasExplanationTask,
+        n_workers: int | None = None,
+        verbose: bool | None = None,
+    ) -> None:
         """Initialize an instance of `OptimizerBiasGame`.
 
         Args:
             explanation_task (OptimizerBiasExplanationTask): The task that contains all necessary
-                information for defining the game. This includes the dataset, target model, and optimizer ensemble.
+                information for defining the game. This includes the configuration space, the surrogate model, the
+                optimizer of interest, and the ensemble of diverse optimizers.
+            n_workers: The number of worker threads to use for parallel evaluation
+                of coalitions. Defaults to None meaning no parallelization.  Using more workers can significantly
+                speed up the computation of Shapley values.  The maximum number of workers is capped by the number of coalitions.
+            verbose:  A boolean indicating whether to print verbose messages during
+                computation. Defaults to None.  When set to True, the method prints
+                debugging information and progress updates.
 
         Example:
             >>> from hypershap.task import OptimizerBiasExplanationTask
@@ -67,7 +79,7 @@ class OptimizerBiasGame(AbstractHPIGame):
             >>> game = OptimizerBiasGame(expl_task)
 
         """
-        super().__init__(explanation_task)
+        super().__init__(explanation_task, n_workers=n_workers, verbose=verbose)
 
     def _get_explanation_task(self) -> OptimizerBiasExplanationTask:
         return self.explanation_task
