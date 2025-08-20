@@ -18,7 +18,12 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "notebook>=7.4.5",
+    "shapiq>=1.2.3",
+    "ConfigSpace>=1.2.1",
+    "numpy>=2.3.2",
+    "scikit-learn>=1.7.1",
+    "matplotlib>=3.10.5",
+    "networkx>=3.5"
 ]
 
 [project.urls]
