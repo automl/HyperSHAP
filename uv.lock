@@ -438,7 +438,6 @@ name = "hypershap"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
-    { name = "configspace" },
     { name = "matplotlib" },
     { name = "networkx" },
     { name = "numpy" },
@@ -483,7 +482,6 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "configspace", specifier = ">=1.2.1" },
     { name = "matplotlib", specifier = ">=3.10.5" },
     { name = "networkx", specifier = ">=3.5" },
     { name = "numpy", specifier = ">=2.3.2" },
