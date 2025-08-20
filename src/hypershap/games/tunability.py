@@ -24,7 +24,12 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import numpy as np
 
-    from hypershap.task import TunabilityExplanationTask
+    from hypershap.task import (
+        BaselineExplanationTask,
+        MistunabilityExplanationTask,
+        SensitivityExplanationTask,
+        TunabilityExplanationTask,
+    )
 
 from hypershap.games.abstract import AbstractHPIGame
 from hypershap.utils import ConfigSpaceSearcher, RandomConfigSpaceSearcher
@@ -37,8 +42,8 @@ class SearchBasedGame(AbstractHPIGame):
 
     def __init__(
         self,
-        explanation_task: TunabilityExplanationTask,
-        cs_searcher: ConfigSpaceSearcher = None,
+        explanation_task: BaselineExplanationTask,
+        cs_searcher: ConfigSpaceSearcher,
         n_workers: int | None = None,
         verbose: bool | None = None,
     ) -> None:
@@ -80,7 +85,7 @@ class TunabilityGame(SearchBasedGame):
     def __init__(
         self,
         explanation_task: TunabilityExplanationTask,
-        cs_searcher: ConfigSpaceSearcher = None,
+        cs_searcher: ConfigSpaceSearcher | None = None,
         n_workers: int | None = None,
         verbose: bool | None = None,
     ) -> None:
@@ -113,8 +118,8 @@ class SensitivityGame(SearchBasedGame):
 
     def __init__(
         self,
-        explanation_task: TunabilityExplanationTask,
-        cs_searcher: ConfigSpaceSearcher = None,
+        explanation_task: SensitivityExplanationTask,
+        cs_searcher: ConfigSpaceSearcher | None = None,
         n_workers: int | None = None,
         verbose: bool | None = None,
     ) -> None:
@@ -143,13 +148,13 @@ class SensitivityGame(SearchBasedGame):
         super().__init__(explanation_task, cs_searcher, n_workers=n_workers, verbose=verbose)
 
 
-class MistunabilityGame(TunabilityGame):
+class MistunabilityGame(SearchBasedGame):
     """Game representing the mistunability of hyperparameters."""
 
     def __init__(
         self,
-        explanation_task: TunabilityExplanationTask,
-        cs_searcher: ConfigSpaceSearcher = None,
+        explanation_task: MistunabilityExplanationTask,
+        cs_searcher: ConfigSpaceSearcher | None = None,
         n_workers: int | None = None,
         verbose: bool | None = None,
     ) -> None:

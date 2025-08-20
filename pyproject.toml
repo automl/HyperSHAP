@@ -85,7 +85,16 @@ ignore = [
     "E501",
     # DoNotAssignLambda
     "E731",
+    # Argument name should be lowercase (conflicting with sklearn)
+    "N803",
+    # Dynamically typed expressions (setup protocol type)
+    "ANN401",
+    # Boolean-typed positional argument in function definition
+    "FBT001",
 ]
+
+[tool.ruff.lint.pep8-naming]
+ignore-names = ["X"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["hypershap"]

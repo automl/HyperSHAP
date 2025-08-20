@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 import logging
 
 import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
 from shapiq import ExactComputer, InteractionValues
 
 from hypershap.games import (
@@ -144,7 +146,7 @@ class HyperSHAP:
 
     def tunability(
         self,
-        baseline_config: Configuration = None,
+        baseline_config: Configuration | None = None,
         index: str = "FSII",
         order: int = 2,
         n_samples: int = 10_000,
@@ -161,6 +163,9 @@ class HyperSHAP:
             InteractionValues: The computed interaction values.
 
         """
+        if baseline_config is None:
+            baseline_config = self.explanation_task.config_space.get_default_configuration()
+
         # setup explanation task
         tunability_task: TunabilityExplanationTask = TunabilityExplanationTask(
             config_space=self.explanation_task.config_space,
@@ -183,7 +188,7 @@ class HyperSHAP:
 
     def sensitivity(
         self,
-        baseline_config: Configuration = None,
+        baseline_config: Configuration | None = None,
         index: str = "FSII",
         order: int = 2,
         n_samples: int = 10_000,
@@ -200,8 +205,11 @@ class HyperSHAP:
             InteractionValues: The computed interaction values.
 
         """
+        if baseline_config is None:
+            baseline_config = self.explanation_task.config_space.get_default_configuration()
+
         # setup explanation task
-        tunability_task: SensitivityExplanationTask = SensitivityExplanationTask(
+        sensitivity_task: SensitivityExplanationTask = SensitivityExplanationTask(
             config_space=self.explanation_task.config_space,
             surrogate_model=self.explanation_task.surrogate_model,
             baseline_config=baseline_config,
@@ -209,9 +217,9 @@ class HyperSHAP:
 
         # setup tunability game and get interaction values
         tg = SensitivityGame(
-            explanation_task=tunability_task,
+            explanation_task=sensitivity_task,
             cs_searcher=RandomConfigSpaceSearcher(
-                explanation_task=tunability_task,
+                explanation_task=sensitivity_task,
                 n_samples=n_samples,
                 mode="var",
             ),
@@ -222,7 +230,7 @@ class HyperSHAP:
 
     def mistunability(
         self,
-        baseline_config: Configuration = None,
+        baseline_config: Configuration | None = None,
         index: str = "FSII",
         order: int = 2,
         n_samples: int = 10_000,
@@ -239,8 +247,11 @@ class HyperSHAP:
             InteractionValues: The computed interaction values.
 
         """
+        if baseline_config is None:
+            baseline_config = self.explanation_task.config_space.get_default_configuration()
+
         # setup explanation task
-        tunability_task: MistunabilityExplanationTask = MistunabilityExplanationTask(
+        mistunability_task: MistunabilityExplanationTask = MistunabilityExplanationTask(
             config_space=self.explanation_task.config_space,
             surrogate_model=self.explanation_task.surrogate_model,
             baseline_config=baseline_config,
@@ -248,9 +259,9 @@ class HyperSHAP:
 
         # setup tunability game and get interaction values
         tg = MistunabilityGame(
-            explanation_task=tunability_task,
+            explanation_task=mistunability_task,
             cs_searcher=RandomConfigSpaceSearcher(
-                explanation_task=tunability_task,
+                explanation_task=mistunability_task,
                 n_samples=n_samples,
                 mode="min",
             ),
@@ -284,11 +295,10 @@ class HyperSHAP:
             surrogate_model=self.explanation_task.surrogate_model,
             optimizer_of_interest=optimizer_of_interest,
             optimizer_ensemble=optimizer_ensemble,
-            n_workers=self.n_workers,
         )
 
         # setup optimizer bias game and get interaction values
-        og = OptimizerBiasGame(explanation_task=optimizer_bias_task)
+        og = OptimizerBiasGame(explanation_task=optimizer_bias_task, n_workers=self.n_workers, verbose=self.verbose)
         return self.__get_interaction_values(game=og, index=index, order=order)
 
     def plot_si_graph(self, interaction_values: InteractionValues | None = None, save_path: str | None = None) -> None:
@@ -304,9 +314,11 @@ class HyperSHAP:
 
         # if given interaction values use those, else use cached interaction values
         iv = interaction_values if interaction_values is not None else self.last_interaction_values
-        hyperparameter_names = self.explanation_task.get_hyperparameter_names()
 
-        import networkx as nx
+        if not isinstance(iv, InteractionValues):
+            raise TypeError
+
+        hyperparameter_names = self.explanation_task.get_hyperparameter_names()
 
         def get_circular_layout(n_players: int) -> dict:
             original_graph, graph_nodes = nx.Graph(), []
@@ -345,9 +357,17 @@ class HyperSHAP:
 
         # if given interaction values use those, else use cached interaction values
         iv = interaction_values if interaction_values is not None else self.last_interaction_values
+
+        if not isinstance(iv, InteractionValues):
+            raise TypeError
+
         hyperparameter_names = self.explanation_task.get_hyperparameter_names()
 
         fig = iv.plot_upset(feature_names=hyperparameter_names, show=False)
+
+        if fig is None:
+            raise TypeError
+
         ax = fig.get_axes()[0]
         ax.set_ylabel("Performance Gain")
         # also add "parameter" to the y-axis label
@@ -374,9 +394,13 @@ class HyperSHAP:
 
         # if given interaction values use those, else use cached interaction values
         iv = interaction_values if interaction_values is not None else self.last_interaction_values
+
+        if not isinstance(iv, InteractionValues):
+            raise TypeError
+
         hyperparameter_names = self.explanation_task.get_hyperparameter_names()
 
-        iv.plot_force(feature_names=hyperparameter_names, show=False)
+        iv.plot_force(feature_names=np.array(hyperparameter_names), show=False)
         plt.tight_layout()
 
         if save_path is not None:

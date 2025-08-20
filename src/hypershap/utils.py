@@ -29,15 +29,29 @@ class ConfigSpaceSearcher(ABC):
     of hyperparameters.
     """
 
-    def __init__(self, explanation_task: BaselineExplanationTask) -> None:
+    def __init__(
+        self,
+        explanation_task: BaselineExplanationTask,
+        mode: str = "max",
+        allowed_modes: list[str] | None = None,
+    ) -> None:
         """Initialize the searcher with the explanation task.
 
         Args:
             explanation_task: The explanation task containing the configuration
                 space and surrogate model.
+            mode: The aggregation mode for performance values.
+            allowed_modes: The list of allowed aggregation mode for performance values.
 
         """
         self.explanation_task = explanation_task
+        self.mode = mode
+        self.allowed_modes = allowed_modes
+
+        if self.allowed_modes is None or mode in self.allowed_modes:
+            self.mode = mode
+        else:
+            raise UnknownModeError
 
     @abstractmethod
     def search(self, coalition: np.ndarray) -> float:
@@ -59,26 +73,21 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
     Useful for establishing baseline performance or approximating game values.
     """
 
-    def __init__(self, explanation_task: BaselineExplanationTask, n_samples: int = 10_000, mode: str = "max") -> None:
+    def __init__(self, explanation_task: BaselineExplanationTask, mode: str = "max", n_samples: int = 10_000) -> None:
         """Initialize the random configuration space searcher.
 
         Args:
             explanation_task: The explanation task containing the configuration
                 space and surrogate model.
-            n_samples: The number of configurations to sample.
             mode: The aggregation mode for performance values ('max', 'min', 'avg', 'var').
+            n_samples: The number of configurations to sample.
 
         """
-        super().__init__(explanation_task)
+        allowed_modes = ["max", "min", "avg", "var"]
+        super().__init__(explanation_task, mode=mode, allowed_modes=allowed_modes)
 
         sampled_configurations = self.explanation_task.config_space.sample_configuration(size=n_samples)
         self.random_sample = np.array([config.get_array() for config in sampled_configurations])
-
-        allowed_modes = ["max", "min", "avg", "var"]
-        if mode in allowed_modes:
-            self.mode = mode
-        else:
-            raise UnknownModeError
 
         # cache coalition values to ensure monotonicity for min/max
         self.coalition_cache = {}

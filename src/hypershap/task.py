@@ -86,7 +86,6 @@ class ExplanationTask:
             An ExplanationTask instance.
 
         """
-        base_model = base_model if base_model is not None else RandomForestRegressor()
         surrogate_model = DataBasedSurrogateModel(config_space=config_space, data=data, base_model=base_model)
         return ExplanationTask(config_space=config_space, surrogate_model=surrogate_model)
 

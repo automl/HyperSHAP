@@ -24,9 +24,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import numpy as np
 
-    from hypershap.task import OptimizerBiasExplanationTask
-
 from hypershap.games import AbstractHPIGame
+from hypershap.task import OptimizerBiasExplanationTask
 
 
 class OptimizerBiasGame(AbstractHPIGame):
@@ -82,7 +81,9 @@ class OptimizerBiasGame(AbstractHPIGame):
         super().__init__(explanation_task, n_workers=n_workers, verbose=verbose)
 
     def _get_explanation_task(self) -> OptimizerBiasExplanationTask:
-        return self.explanation_task
+        if isinstance(self.explanation_task, OptimizerBiasExplanationTask):
+            return self.explanation_task
+        raise ValueError
 
     def evaluate_single_coalition(self, coalition: np.ndarray) -> float:
         """Evaluate a single coalition by comparing against an optimizer ensemble.

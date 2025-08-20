@@ -6,7 +6,7 @@ the relationship between input hyperparameters and performance.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 if TYPE_CHECKING:
     from ConfigSpace import Configuration, ConfigurationSpace
@@ -16,6 +16,67 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
+
+
+class SklearnRegressorProtocol(Protocol):
+    """Defines the interface for scikit-learn-like regression models.
+
+    This protocol specifies the required methods for a class to be considered
+    a compatible scikit-learn regression model.  It mandates the presence of `fit`,
+    `predict`, and `score` methods, mirroring the structure of many
+    scikit-learn estimators.
+
+    Attributes:
+        fit (callable): A method that fits the model to the provided data.
+                         It should accept training data (X) and target variables (y)
+                         as arguments, and any optional fit parameters. It should return
+                         the fitted model instance itself (allowing for chaining).
+        predict (callable): A method that generates predictions for a given input dataset.
+                           It accepts input data (X) and returns predictions as a NumPy array.
+        score (callable): A method that evaluates the model's performance on a given dataset.
+                          It accepts input data (X) and corresponding target variables (y)
+                          and returns a scalar performance score (e.g., R-squared, MSE).
+
+    """
+
+    def fit(self, X: Any, y: Any, **fit_params: Any) -> None:
+        """Fit the regression model to the provided training data.
+
+        Args:
+            X (np.ndarray): The training data features.
+            y (np.ndarray): The training data target variables.
+            **fit_params (Any): Optional keyword arguments passed to the fit method.
+
+        Returns:
+            'SklearnRegressorProtocol': The fitted regression model instance itself, allowing for method chaining.
+
+        """
+        ...
+
+    def predict(self, X: Any) -> np.ndarray:
+        """Generate predictions for a given input dataset.
+
+        Args:
+            X (np.ndarray): The input data features for prediction.
+
+        Returns:
+            np.ndarray: The predicted target values as a NumPy array.
+
+        """
+        ...
+
+    def score(self, X: Any, y: Any) -> float:
+        """Evaluate the model's performance on a given dataset.
+
+        Args:
+            X (np.ndarray): The input data features.
+            y (np.ndarray): The corresponding target variables.
+
+        Returns:
+            float: A scalar performance score, representing the model's accuracy on the dataset.
+
+        """
+        ...
 
 
 class SurrogateModel(ABC):
@@ -44,7 +105,10 @@ class SurrogateModel(ABC):
             The predicted performance for the given configuration.
 
         """
-        return self.evaluate(np.array(config.get_array()))
+        res = self.evaluate(np.array(config.get_array()))
+        if not isinstance(res, float):
+            raise TypeError
+        return res
 
     def evaluate_config_batch(self, config_batch: list[Configuration]) -> list[float]:
         """Evaluate a batch of configurations using the surrogate model.
@@ -56,7 +120,10 @@ class SurrogateModel(ABC):
             A list of predicted performances for the given configurations.
 
         """
-        return self.evaluate(np.array([config.get_array() for config in config_batch]))
+        res = self.evaluate(np.array([config.get_array() for config in config_batch]))
+        if not isinstance(res, list):
+            raise TypeError
+        return res
 
     @abstractmethod
     def evaluate(self, config_array: np.ndarray) -> float | list[float]:
@@ -95,7 +162,10 @@ class ModelBasedSurrogateModel(SurrogateModel):
             The predicted performance for the given configuration.
 
         """
-        return self.evaluate(config.get_array())
+        res = self.evaluate(config.get_array())
+        if not isinstance(res, float):
+            raise TypeError
+        return res
 
     def evaluate_config_batch(self, config_batch: list[Configuration]) -> list[float]:
         """Evaluate a batch of configurations.
@@ -107,7 +177,10 @@ class ModelBasedSurrogateModel(SurrogateModel):
             A list of predicted performances for the given configurations.
 
         """
-        return self.evaluate(np.array([config.get_array() for config in config_batch]))
+        res = self.evaluate(np.array([config.get_array() for config in config_batch]))
+        if not isinstance(res, list):
+            raise TypeError
+        return res
 
     def evaluate(self, config_array: np.ndarray) -> float | list[float]:
         """Evaluate a configuration (or batch of configurations).
@@ -122,7 +195,9 @@ class ModelBasedSurrogateModel(SurrogateModel):
         if config_array.ndim == 1:
             config_array = config_array.reshape(1, -1)
 
-        predictions = self.base_model.predict(config_array)
+        base_model = cast("SklearnRegressorProtocol", self.base_model)
+        predictions = base_model.predict(config_array)
+
         if predictions.shape == (1,):  # Check for a 1-element array (scalar)
             return float(predictions[0])  # Convert to a Python float
 
@@ -154,7 +229,7 @@ class DataBasedSurrogateModel(ModelBasedSurrogateModel):
         if base_model is None:
             base_model = RandomForestRegressor()
 
-        pipeline = base_model
+        pipeline = cast("SklearnRegressorProtocol", base_model)
         pipeline.fit(train_x, train_y)
 
-        super().__init__(config_space, pipeline)
+        super().__init__(config_space, base_model)

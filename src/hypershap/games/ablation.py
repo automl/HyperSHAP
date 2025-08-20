@@ -24,14 +24,10 @@ in a systematic and interpretable manner.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import numpy as np
 
 from hypershap.games.abstract import AbstractHPIGame
-
-if TYPE_CHECKING:
-    from hypershap.task import AblationExplanationTask
+from hypershap.task import AblationExplanationTask
 
 
 class AblationGame(AbstractHPIGame):
@@ -82,7 +78,13 @@ class AblationGame(AbstractHPIGame):
         baseline_cfg = self._get_explanation_task().baseline_config.get_array()
         cfg_of_interest = self._get_explanation_task().config_of_interest.get_array()
         blend = np.where(coalition == 0, baseline_cfg, cfg_of_interest)
-        return self._get_explanation_task().surrogate_model.evaluate(blend)
+        res = self._get_explanation_task().surrogate_model.evaluate(blend)
+
+        # validate that we do not get a list of floats by accident
+        if isinstance(res, list):
+            raise TypeError
+
+        return res
 
     def _get_explanation_task(self) -> AblationExplanationTask:
         """Retrieve the explanation task associated with this ablation game.
@@ -94,4 +96,6 @@ class AblationGame(AbstractHPIGame):
             AblationExplanationTask: The explanation task associated with this ablation game.
 
         """
-        return self.explanation_task
+        if isinstance(self.explanation_task, AblationExplanationTask):
+            return self.explanation_task
+        raise ValueError
