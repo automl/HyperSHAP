@@ -99,7 +99,7 @@ class HyperSHAP:
 
     def __get_interaction_values(self, game: AbstractHPIGame, index: str = "FSII", order: int = 2) -> InteractionValues:
         # instantiate exact computer if number of hyperparameters is small enough
-        ec = ExactComputer(n_players=game.get_num_hyperparameters(), game=game)
+        ec = ExactComputer(n_players=game.get_num_hyperparameters(), game=game)  # pyright: ignore
 
         # compute interaction values with the given index and order
         interaction_values = ec(index=index, order=order)
