@@ -18,11 +18,20 @@ import logging
 import matplotlib.pyplot as plt
 from shapiq import ExactComputer, InteractionValues
 
-from hypershap.games import AblationGame, AbstractHPIGame, OptimizerBiasGame, TunabilityGame
+from hypershap.games import (
+    AblationGame,
+    AbstractHPIGame,
+    MistunabilityGame,
+    OptimizerBiasGame,
+    SensitivityGame,
+    TunabilityGame,
+)
 from hypershap.task import (
     AblationExplanationTask,
     ExplanationTask,
+    MistunabilityExplanationTask,
     OptimizerBiasExplanationTask,
+    SensitivityExplanationTask,
     TunabilityExplanationTask,
 )
 from hypershap.utils import RandomConfigSpaceSearcher
@@ -63,15 +72,28 @@ class HyperSHAP:
 
     """
 
-    def __init__(self, explanation_task: ExplanationTask) -> None:
+    def __init__(
+        self,
+        explanation_task: ExplanationTask,
+        n_workers: int | None = None,
+        verbose: bool | None = None,
+    ) -> None:
         """Initialize the HyperSHAP instance with an explanation task.
 
         Args:
             explanation_task (ExplanationTask): The task responsible for generating explanations.
+            n_workers: The number of worker threads to use for parallel evaluation
+                of coalitions. Defaults to None meaning no parallelization.  Using more workers can significantly
+                speed up the computation of Shapley values.  The maximum number of workers is capped by the number of coalitions.
+            verbose:  A boolean indicating whether to print verbose messages during
+                computation. Defaults to None.  When set to True, the method prints
+                debugging information and progress updates.
 
         """
         self.explanation_task = explanation_task
         self.last_interaction_values = None
+        self.n_workers = n_workers
+        self.verbose = verbose
 
     def __get_interaction_values(self, game: AbstractHPIGame, index: str = "FSII", order: int = 2) -> InteractionValues:
         # instantiate exact computer if number of hyperparameters is small enough
@@ -113,7 +135,11 @@ class HyperSHAP:
         )
 
         # setup ablation game and get interaction values
-        ag = AblationGame(explanation_task=ablation_task)
+        ag = AblationGame(
+            explanation_task=ablation_task,
+            n_workers=self.n_workers,
+            verbose=self.verbose,
+        )
         return self.__get_interaction_values(game=ag, index=index, order=order)
 
     def tunability(
@@ -150,6 +176,86 @@ class HyperSHAP:
                 n_samples=n_samples,
                 mode="max",
             ),
+            n_workers=self.n_workers,
+            verbose=self.verbose,
+        )
+        return self.__get_interaction_values(game=tg, index=index, order=order)
+
+    def sensitivity(
+        self,
+        baseline_config: Configuration = None,
+        index: str = "FSII",
+        order: int = 2,
+        n_samples: int = 10_000,
+    ) -> InteractionValues:
+        """Compute and return the interaction values for sensitivity analysis.
+
+        Args:
+            baseline_config (Configuration | None, optional): The baseline configuration. Defaults to None.
+            index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
+            order (int, optional): The order of the interaction values. Defaults to 2.
+            n_samples (int, optional): The number of samples to use for simulating HPO. Defaults to 10_000.
+
+        Returns:
+            InteractionValues: The computed interaction values.
+
+        """
+        # setup explanation task
+        tunability_task: SensitivityExplanationTask = SensitivityExplanationTask(
+            config_space=self.explanation_task.config_space,
+            surrogate_model=self.explanation_task.surrogate_model,
+            baseline_config=baseline_config,
+        )
+
+        # setup tunability game and get interaction values
+        tg = SensitivityGame(
+            explanation_task=tunability_task,
+            cs_searcher=RandomConfigSpaceSearcher(
+                explanation_task=tunability_task,
+                n_samples=n_samples,
+                mode="var",
+            ),
+            n_workers=self.n_workers,
+            verbose=self.verbose,
+        )
+        return self.__get_interaction_values(game=tg, index=index, order=order)
+
+    def mistunability(
+        self,
+        baseline_config: Configuration = None,
+        index: str = "FSII",
+        order: int = 2,
+        n_samples: int = 10_000,
+    ) -> InteractionValues:
+        """Compute and return the interaction values for mistunability analysis.
+
+        Args:
+            baseline_config (Configuration | None, optional): The baseline configuration. Defaults to None.
+            index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
+            order (int, optional): The order of the interaction values. Defaults to 2.
+            n_samples (int, optional): The number of samples to use for simulating HPO. Defaults to 10_000.
+
+        Returns:
+            InteractionValues: The computed interaction values.
+
+        """
+        # setup explanation task
+        tunability_task: MistunabilityExplanationTask = MistunabilityExplanationTask(
+            config_space=self.explanation_task.config_space,
+            surrogate_model=self.explanation_task.surrogate_model,
+            baseline_config=baseline_config,
+        )
+
+        # setup tunability game and get interaction values
+        tg = MistunabilityGame(
+            explanation_task=tunability_task,
+            cs_searcher=RandomConfigSpaceSearcher(
+                explanation_task=tunability_task,
+                n_samples=n_samples,
+                mode="min",
+            ),
+            n_workers=self.n_workers,
+            verbose=self.verbose,
         )
         return self.__get_interaction_values(game=tg, index=index, order=order)
 
@@ -178,6 +284,7 @@ class HyperSHAP:
             surrogate_model=self.explanation_task.surrogate_model,
             optimizer_of_interest=optimizer_of_interest,
             optimizer_ensemble=optimizer_ensemble,
+            n_workers=self.n_workers,
         )
 
         # setup optimizer bias game and get interaction values
