@@ -1,10 +1,10 @@
 # HyperSHAP <img src="https://raw.githubusercontent.com/automl/hypershap/main/docs/source/_static/logo/hypershap-logo.png" alt="HyperSHAP Logo" align="right" height="200px"/>
 
 [![Release](https://img.shields.io/github/v/release/automl/HyperSHAP)](https://img.shields.io/github/v/release/automl/hypershap)
-[![Build status](https://img.shields.io/github/actions/workflow/status/automl/HyperSHAP/main.yml?branch=main)](https://github.com/automl/HyperSHAP/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/automl/HyperSHAP/branch/main/graph/badge.svg)](https://codecov.io/gh/automl/HyperSHAP)
-[![Commit activity](https://img.shields.io/github/commit-activity/m/automl/HyperSHAP)](https://img.shields.io/github/commit-activity/m/automl/HyperSHAP)
-[![License](https://img.shields.io/github/license/automl/HyperSHAP)](https://img.shields.io/github/license/automl/HyperSHAP)
+[![Build status](https://img.shields.io/github/actions/workflow/status/automl/hypershap/main.yml?branch=main)](https://github.com/automl/hypershap/actions/workflows/main.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/automl/hypershap/branch/main/graph/badge.svg)](https://codecov.io/gh/automl/hypershap)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/automl/hypershap)](https://img.shields.io/github/commit-activity/m/automl/hypershap)
+[![License](https://img.shields.io/github/license/automl/hypershap)](https://img.shields.io/github/license/automl/hypershap)
 
 HyperSHAP – a game‑theoretic Python library for explaining Hyperparameter Optimization (HPO). It uses Shapley values and interaction indices to provide both local and global insights into how individual hyper‑parameters (and their interactions) affect a model’s performance.
 
