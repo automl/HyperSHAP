@@ -1,4 +1,4 @@
-# HyperSHAP
+# HyperSHAP <img src="https://raw.githubusercontent.com/automl/hypershap/main/docs/source/_static/logo/hypershap-logo.png" alt="HyperSHAP Logo" align="right" height="250px"/>
 
 [![Release](https://img.shields.io/github/v/release/automl/HyperSHAP)](https://img.shields.io/github/v/release/automl/hypershap)
 [![Build status](https://img.shields.io/github/actions/workflow/status/automl/HyperSHAP/main.yml?branch=main)](https://github.com/automl/HyperSHAP/actions/workflows/main.yml?query=branch%3Amain)
