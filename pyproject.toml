@@ -22,7 +22,6 @@ dependencies = [
     "scikit-learn>=1.7.1",
     "matplotlib>=3.10.5",
     "networkx>=3.4.2",
-    "notebook>=7.4.5",
 ]
 
 [project.urls]
