@@ -5,6 +5,8 @@ from __future__ import annotations
 import pytest
 from ConfigSpace import Configuration, ConfigurationSpace, UniformFloatHyperparameter
 
+from hypershap import ExplanationTask
+
 
 @pytest.fixture(scope="session")
 def simple_config_space() -> ConfigurationSpace:
@@ -38,7 +40,17 @@ class SimpleBlackboxFunction:
         Returns: The value of the configuration.
 
         """
-        return self.a_coeff * x["a"] + self.b_coeff * x["b"]
+        return self.value(x["a"], x["b"])
+
+    def value(self, a: float, b: float) -> float:
+        """Evaluate the value of a configuration.
+
+        Args:
+            a: The value for hyperparameter a.
+            b: The value for hyperparameter b.
+
+        """
+        return self.a_coeff * a + self.b_coeff * b
 
 
 @pytest.fixture(scope="session")
@@ -49,3 +61,12 @@ def simple_blackbox_function() -> SimpleBlackboxFunction:
 
     """
     return SimpleBlackboxFunction(0.7, 2.0)
+
+
+@pytest.fixture(scope="session")
+def simple_base_et(
+    simple_config_space: ConfigurationSpace,
+    simple_blackbox_function: SimpleBlackboxFunction,
+) -> ExplanationTask:
+    """Return a base explanation task for the simple setup."""
+    return ExplanationTask.from_function(simple_config_space, simple_blackbox_function.evaluate)

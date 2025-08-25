@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import pytest
 from sklearn.ensemble import RandomForestRegressor
 
 if TYPE_CHECKING:
@@ -13,7 +12,13 @@ if TYPE_CHECKING:
     from tests.fixtures.simple_setup import SimpleBlackboxFunction
 
 from hypershap import ExplanationTask
-from hypershap.task import BaselineExplanationTask, TunabilityExplanationTask
+from hypershap.task import (
+    BaselineExplanationTask,
+    MistunabilityExplanationTask,
+    MultiBaselineExplanationTask,
+    SensitivityExplanationTask,
+    TunabilityExplanationTask,
+)
 
 
 def _check_explanation_task(
@@ -83,24 +88,46 @@ def test_explanation_task_from_model(
     _check_explanation_task(explanation_task, simple_config_space, simple_blackbox_function)
 
 
-@pytest.fixture
-def base_et(
-    simple_config_space: ConfigurationSpace,
-    simple_blackbox_function: SimpleBlackboxFunction,
-) -> ExplanationTask:
-    """Return a base explanation task for the simple setup."""
-    return ExplanationTask.from_function(simple_config_space, simple_blackbox_function.evaluate)
-
-
-def test_baseline_explanation_task(base_et: ExplanationTask) -> None:
+def test_baseline_explanation_task(simple_base_et: ExplanationTask) -> None:
     """Test the baseline explanation task."""
-    config = base_et.config_space.sample_configuration()
-    et = BaselineExplanationTask(base_et.config_space, base_et.surrogate_model, baseline_config=config)
+    config = simple_base_et.config_space.sample_configuration()
+    et = BaselineExplanationTask(simple_base_et.config_space, simple_base_et.surrogate_model, baseline_config=config)
     assert et.baseline_config == config, "Baseline explanation task should have the proper baseline config."
 
 
-def test_tunability_explanation_task(base_et: ExplanationTask) -> None:
+def test_multibaseline_explanation_task(simple_base_et: ExplanationTask) -> None:
+    """Test the multibaseline explanation task."""
+    baseline_configs = simple_base_et.config_space.sample_configuration(2)
+    et = MultiBaselineExplanationTask(
+        simple_base_et.config_space,
+        simple_base_et.surrogate_model,
+        baseline_configs=baseline_configs,
+    )
+    assert et.baseline_configs == baseline_configs, (
+        "Multibaseline explanation task should have the proper baseline configs."
+    )
+
+
+def test_tunability_explanation_task(simple_base_et: ExplanationTask) -> None:
     """Test the tunability explanation task."""
-    config = base_et.config_space.sample_configuration()
-    et = TunabilityExplanationTask(base_et.config_space, base_et.surrogate_model, baseline_config=config)
-    assert et.baseline_config == config, "Baseline explanation task should have the proper baseline config."
+    config = simple_base_et.config_space.sample_configuration()
+    et = TunabilityExplanationTask(simple_base_et.config_space, simple_base_et.surrogate_model, baseline_config=config)
+    assert et.baseline_config == config, "Tunability explanation task should have the proper baseline config."
+
+
+def test_sensitivity_explanation_task(simple_base_et: ExplanationTask) -> None:
+    """Test the sensitivity explanation task."""
+    config = simple_base_et.config_space.sample_configuration()
+    et = SensitivityExplanationTask(simple_base_et.config_space, simple_base_et.surrogate_model, baseline_config=config)
+    assert et.baseline_config == config, "Sensitivity explanation task should have the proper baseline config."
+
+
+def test_mistunability_explanation_task(simple_base_et: ExplanationTask) -> None:
+    """Test the mistunability explanation task."""
+    config = simple_base_et.config_space.sample_configuration()
+    et = MistunabilityExplanationTask(
+        simple_base_et.config_space,
+        simple_base_et.surrogate_model,
+        baseline_config=config,
+    )
+    assert et.baseline_config == config, "Mistunability explanation task should have the proper baseline config."
