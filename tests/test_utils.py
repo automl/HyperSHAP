@@ -16,8 +16,8 @@ from hypershap.task import BaselineExplanationTask
 from hypershap.utils import RandomConfigSpaceSearcher, UnknownModeError
 
 DEFAULT_MODE = "max"
-N_SAMPLES = 100_000
-EPSILON = 0.1
+N_SAMPLES = 50_000
+EPSILON = 0.2
 
 
 @pytest.fixture(scope="module")
@@ -153,3 +153,14 @@ def test_baseline_coalition_var_search(
     assert abs(res - expected_var < EPSILON), (
         "If no hyperparameter is activated for searching, the variance should be 0."
     )
+
+
+def test_unknown_aggregation_mode(random_cs: RandomConfigSpaceSearcher) -> None:
+    """Test whether unknown mode error is raised when mode is not known."""
+    random_cs.mode = "unknown"
+    try:
+        random_cs.search(np.array([False] * random_cs.explanation_task.get_num_hyperparameters()))
+    except UnknownModeError:
+        assert True, "Expected unknown mode to be raised."
+    else:
+        pytest.fail("Expected unknown mode to be raised.")

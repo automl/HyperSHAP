@@ -83,7 +83,7 @@ class OptimizerBiasGame(AbstractHPIGame):
     def _get_explanation_task(self) -> OptimizerBiasExplanationTask:
         if isinstance(self.explanation_task, OptimizerBiasExplanationTask):
             return self.explanation_task
-        raise ValueError
+        raise ValueError  # pragma: no cover
 
     def evaluate_single_coalition(self, coalition: np.ndarray) -> float:
         """Evaluate a single coalition by comparing against an optimizer ensemble.

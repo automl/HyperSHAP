@@ -16,9 +16,11 @@ from hypershap.task import (
     BaselineExplanationTask,
     MistunabilityExplanationTask,
     MultiBaselineExplanationTask,
+    OptimizerBiasExplanationTask,
     SensitivityExplanationTask,
     TunabilityExplanationTask,
 )
+from hypershap.utils import RandomConfigSpaceSearcher
 
 
 def _check_explanation_task(
@@ -131,3 +133,24 @@ def test_mistunability_explanation_task(simple_base_et: ExplanationTask) -> None
         baseline_config=config,
     )
     assert et.baseline_config == config, "Mistunability explanation task should have the proper baseline config."
+
+
+def test_optimizer_bias_explanation_task(simple_base_et: ExplanationTask) -> None:
+    """Test the optimizer bias explanation task."""
+    baseline_et = BaselineExplanationTask(
+        simple_base_et.config_space,
+        simple_base_et.surrogate_model,
+        baseline_config=simple_base_et.config_space.get_default_configuration(),
+    )
+
+    opt_of_interest = RandomConfigSpaceSearcher(baseline_et, mode="min")
+    ensemble = [RandomConfigSpaceSearcher(baseline_et)]
+
+    obet = OptimizerBiasExplanationTask(
+        simple_base_et.config_space,
+        simple_base_et.surrogate_model,
+        opt_of_interest,
+        ensemble,
+    )
+    assert obet.optimizer_of_interest == opt_of_interest, "Optimizer of interest is not set correctly."
+    assert obet.optimizer_ensemble == ensemble, "Optimizer ensemble is not set correctly."
