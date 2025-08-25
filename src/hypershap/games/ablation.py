@@ -81,8 +81,8 @@ class AblationGame(AbstractHPIGame):
         res = self._get_explanation_task().surrogate_model.evaluate(blend)
 
         # validate that we do not get a list of floats by accident
-        if isinstance(res, list):
-            raise TypeError
+        if isinstance(res, list):  # pragma: no cover
+            raise TypeError  # pragma: no cover
 
         return res
 
@@ -98,4 +98,5 @@ class AblationGame(AbstractHPIGame):
         """
         if isinstance(self.explanation_task, AblationExplanationTask):
             return self.explanation_task
-        raise ValueError
+
+        raise ValueError  # pragma: no cover

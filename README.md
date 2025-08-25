@@ -2,7 +2,7 @@
 
 [![Release](https://img.shields.io/github/v/release/automl/HyperSHAP)](https://img.shields.io/github/v/release/automl/hypershap)
 [![Build status](https://img.shields.io/github/actions/workflow/status/automl/hypershap/main.yml?branch=main)](https://github.com/automl/hypershap/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/automl/hypershap/branch/main/graph/badge.svg)](https://codecov.io/gh/automl/hypershap)
+[![Coverage Status](https://coveralls.io/repos/github/automl/HyperSHAP/badge.svg?branch=dev)](https://coveralls.io/github/automl/HyperSHAP?branch=dev)
 [![Commit activity](https://img.shields.io/github/commit-activity/m/automl/hypershap)](https://img.shields.io/github/commit-activity/m/automl/hypershap)
 [![License](https://img.shields.io/github/license/automl/hypershap)](https://img.shields.io/github/license/automl/hypershap)
 

@@ -301,12 +301,18 @@ class HyperSHAP:
         og = OptimizerBiasGame(explanation_task=optimizer_bias_task, n_workers=self.n_workers, verbose=self.verbose)
         return self.__get_interaction_values(game=og, index=index, order=order)
 
-    def plot_si_graph(self, interaction_values: InteractionValues | None = None, save_path: str | None = None) -> None:
+    def plot_si_graph(
+        self,
+        interaction_values: InteractionValues | None = None,
+        save_path: str | None = None,
+        no_show: bool | None = None,
+    ) -> None:
         """Plot the SHAP interaction values as a graph.
 
         Args:
             interaction_values (InteractionValues | None, optional): The interaction values to plot. Defaults to None.
             save_path (str | None, optional): The path to save the plot. Defaults to None.
+            no_show (bool | None, optional): Do not show the plot if set to true. Defaults to None.
 
         """
         if interaction_values is None and self.last_interaction_values is None:
@@ -315,8 +321,8 @@ class HyperSHAP:
         # if given interaction values use those, else use cached interaction values
         iv = interaction_values if interaction_values is not None else self.last_interaction_values
 
-        if not isinstance(iv, InteractionValues):
-            raise TypeError
+        if not isinstance(iv, InteractionValues):  # pragma: no cover
+            raise TypeError  # pragma: no cover
 
         hyperparameter_names = self.explanation_task.get_hyperparameter_names()
 
@@ -342,14 +348,21 @@ class HyperSHAP:
             plt.savefig(save_path)
             logger.info("Saved SI graph to %s", save_path)
 
-        plt.show()
+        if no_show is None or not no_show:  # pragma: no cover
+            plt.show()  # pragma: no cover
 
-    def plot_upset(self, interaction_values: InteractionValues | None = None, save_path: str | None = None) -> None:
+    def plot_upset(
+        self,
+        interaction_values: InteractionValues | None = None,
+        save_path: str | None = None,
+        no_show: bool | None = None,
+    ) -> None:
         """Plot the SHAP interaction values as an upset plot graph.
 
         Args:
             interaction_values (InteractionValues | None, optional): The interaction values to plot. Defaults to None.
             save_path (str | None, optional): The path to save the plot. Defaults to None.
+            no_show (bool | None, optional): Do not show the plot if set to true. Defaults to None.
 
         """
         if interaction_values is None and self.last_interaction_values is None:
@@ -358,15 +371,15 @@ class HyperSHAP:
         # if given interaction values use those, else use cached interaction values
         iv = interaction_values if interaction_values is not None else self.last_interaction_values
 
-        if not isinstance(iv, InteractionValues):
-            raise TypeError
+        if not isinstance(iv, InteractionValues):  # pragma: no cover
+            raise TypeError  # pragma: no cover
 
         hyperparameter_names = self.explanation_task.get_hyperparameter_names()
 
         fig = iv.plot_upset(feature_names=hyperparameter_names, show=False)
 
-        if fig is None:
-            raise TypeError
+        if fig is None:  # pragma: no cover
+            raise TypeError  # pragma: no cover
 
         ax = fig.get_axes()[0]
         ax.set_ylabel("Performance Gain")
@@ -379,14 +392,21 @@ class HyperSHAP:
         if save_path is not None:
             plt.savefig(save_path)
 
-        plt.show()
+        if no_show is None or not no_show:  # pragma: no cover
+            plt.show()  # pragma: no cover
 
-    def plot_force(self, interaction_values: InteractionValues | None = None, save_path: str | None = None) -> None:
+    def plot_force(
+        self,
+        interaction_values: InteractionValues | None = None,
+        save_path: str | None = None,
+        no_show: bool | None = None,
+    ) -> None:
         """Plot the SHAP interaction values as a forceplot graph.
 
         Args:
             interaction_values: Interaction values to plot. Defaults to None.
             save_path: The path to save the plot. Defaults to None.
+            no_show (bool | None, optional): Do not show the plot if set to true. Defaults to None.
 
         """
         if interaction_values is None and self.last_interaction_values is None:
@@ -395,8 +415,8 @@ class HyperSHAP:
         # if given interaction values use those, else use cached interaction values
         iv = interaction_values if interaction_values is not None else self.last_interaction_values
 
-        if not isinstance(iv, InteractionValues):
-            raise TypeError
+        if not isinstance(iv, InteractionValues):  # pragma: no cover
+            raise TypeError  # pragma: no cover
 
         hyperparameter_names = self.explanation_task.get_hyperparameter_names()
 
@@ -406,4 +426,5 @@ class HyperSHAP:
         if save_path is not None:
             plt.savefig(save_path)
 
-        plt.show()
+        if no_show is None or not no_show:  # pragma: no cover
+            plt.show()  # pragma: no cover
