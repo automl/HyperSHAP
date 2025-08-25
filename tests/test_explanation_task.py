@@ -10,7 +10,7 @@ from sklearn.ensemble import RandomForestRegressor
 if TYPE_CHECKING:
     from ConfigSpace import ConfigurationSpace
 
-    from simple_setup import SimpleBlackboxFunction
+    from tests.fixtures.simple_setup import SimpleBlackboxFunction
 
 from hypershap import ExplanationTask
 from hypershap.task import BaselineExplanationTask, TunabilityExplanationTask
