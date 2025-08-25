@@ -6,7 +6,7 @@ import pytest
 from ConfigSpace import Configuration, ConfigurationSpace, UniformFloatHyperparameter
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def simple_config_space() -> ConfigurationSpace:
     """Return a simple config space for testing."""
     config_space = ConfigurationSpace()
@@ -41,7 +41,7 @@ class SimpleBlackboxFunction:
         return self.a_coeff * x["a"] + self.b_coeff * x["b"]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def simple_blackbox_function() -> SimpleBlackboxFunction:
     """Return a simple blackbox function for testing.
 

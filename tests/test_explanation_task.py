@@ -10,7 +10,7 @@ from sklearn.ensemble import RandomForestRegressor
 if TYPE_CHECKING:
     from ConfigSpace import ConfigurationSpace
 
-    from fixtures.simple_setup import SimpleBlackboxFunction
+    from simple_setup import SimpleBlackboxFunction
 
 from hypershap import ExplanationTask
 from hypershap.task import BaselineExplanationTask, TunabilityExplanationTask
@@ -94,13 +94,13 @@ def base_et(
 
 def test_baseline_explanation_task(base_et: ExplanationTask) -> None:
     """Test the baseline explanation task."""
-    config = base_et.config_space.sample_configuration(1)
+    config = base_et.config_space.sample_configuration()
     et = BaselineExplanationTask(base_et.config_space, base_et.surrogate_model, baseline_config=config)
     assert et.baseline_config == config, "Baseline explanation task should have the proper baseline config."
 
 
 def test_tunability_explanation_task(base_et: ExplanationTask) -> None:
     """Test the tunability explanation task."""
-    config = base_et.config_space.sample_configuration(1)
+    config = base_et.config_space.sample_configuration()
     et = TunabilityExplanationTask(base_et.config_space, base_et.surrogate_model, baseline_config=config)
     assert et.baseline_config == config, "Baseline explanation task should have the proper baseline config."
