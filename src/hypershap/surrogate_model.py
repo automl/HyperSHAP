@@ -106,8 +106,8 @@ class SurrogateModel(ABC):
 
         """
         res = self.evaluate(np.array(config.get_array()))
-        if not isinstance(res, float):
-            raise TypeError
+        if not isinstance(res, float):  # pragma: no cover
+            raise TypeError  # pragma: no cover
         return res
 
     def evaluate_config_batch(self, config_batch: list[Configuration]) -> list[float]:
@@ -121,8 +121,8 @@ class SurrogateModel(ABC):
 
         """
         res = self.evaluate(np.array([config.get_array() for config in config_batch]))
-        if not isinstance(res, list):
-            raise TypeError
+        if not isinstance(res, list):  # pragma: no cover
+            raise TypeError  # pragma: no cover
         return res
 
     @abstractmethod
@@ -163,8 +163,8 @@ class ModelBasedSurrogateModel(SurrogateModel):
 
         """
         res = self.evaluate(config.get_array())
-        if not isinstance(res, float):
-            raise TypeError
+        if not isinstance(res, float):  # pragma: no cover
+            raise TypeError  # pragma: no cover
         return res
 
     def evaluate_config_batch(self, config_batch: list[Configuration]) -> list[float]:
@@ -178,8 +178,8 @@ class ModelBasedSurrogateModel(SurrogateModel):
 
         """
         res = self.evaluate(np.array([config.get_array() for config in config_batch]))
-        if not isinstance(res, list):
-            raise TypeError
+        if not isinstance(res, list):  # pragma: no cover
+            raise TypeError  # pragma: no cover
         return res
 
     def evaluate(self, config_array: np.ndarray) -> float | list[float]:

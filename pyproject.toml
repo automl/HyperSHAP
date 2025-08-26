@@ -5,11 +5,12 @@ description = "HyperSHAP is a post-hoc explanation method for hyperparameter opt
 authors = [{ name = "Marcel Wever", email = "m.wever@ai.uni-hannover.de" }]
 readme = "README.md"
 keywords = ['python']
-requires-python = ">=3.11,<4.0"
+requires-python = ">=3.10,<4.0"
 classifiers = [
     "Intended Audience :: Developers",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -17,10 +18,10 @@ classifiers = [
 ]
 dependencies = [
     "shapiq>=1.2.3",
-    "numpy>=2.3.2",
+    "numpy>=2.2.6",
     "scikit-learn>=1.7.1",
     "matplotlib>=3.10.5",
-    "networkx>=3.5"
+    "networkx>=3.4.2",
 ]
 
 [project.urls]
