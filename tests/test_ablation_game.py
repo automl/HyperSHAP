@@ -70,3 +70,6 @@ def test_ablation_game() -> None:
         surrogate_model.last_queried_config,
         "Mismatch between expected config and actual config",
     )
+
+    game_hp_names = ablation_game.get_hyperparameter_names()
+    assert game_hp_names == ["a", "b", "c"], "Hyperparameter names mismatch"

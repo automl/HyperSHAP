@@ -36,7 +36,6 @@ from hypershap.task import (
     SensitivityExplanationTask,
     TunabilityExplanationTask,
 )
-from hypershap.utils import RandomConfigSpaceSearcher
 
 logger = logging.getLogger(__name__)
 
@@ -137,12 +136,12 @@ class HyperSHAP:
         )
 
         # setup ablation game and get interaction values
-        ag = AblationGame(
+        game = AblationGame(
             explanation_task=ablation_task,
             n_workers=self.n_workers,
             verbose=self.verbose,
         )
-        return self.__get_interaction_values(game=ag, index=index, order=order)
+        return self.__get_interaction_values(game=game, index=index, order=order)
 
     def tunability(
         self,
@@ -174,17 +173,13 @@ class HyperSHAP:
         )
 
         # setup tunability game and get interaction values
-        tg = TunabilityGame(
+        game = TunabilityGame(
             explanation_task=tunability_task,
-            cs_searcher=RandomConfigSpaceSearcher(
-                explanation_task=tunability_task,
-                n_samples=n_samples,
-                mode="max",
-            ),
             n_workers=self.n_workers,
             verbose=self.verbose,
         )
-        return self.__get_interaction_values(game=tg, index=index, order=order)
+        game.cs_searcher.n_samples = n_samples
+        return self.__get_interaction_values(game=game, index=index, order=order)
 
     def sensitivity(
         self,
@@ -216,17 +211,13 @@ class HyperSHAP:
         )
 
         # setup tunability game and get interaction values
-        tg = SensitivityGame(
+        game = SensitivityGame(
             explanation_task=sensitivity_task,
-            cs_searcher=RandomConfigSpaceSearcher(
-                explanation_task=sensitivity_task,
-                n_samples=n_samples,
-                mode="var",
-            ),
             n_workers=self.n_workers,
             verbose=self.verbose,
         )
-        return self.__get_interaction_values(game=tg, index=index, order=order)
+        game.cs_searcher.n_samples = n_samples
+        return self.__get_interaction_values(game=game, index=index, order=order)
 
     def mistunability(
         self,
@@ -258,17 +249,13 @@ class HyperSHAP:
         )
 
         # setup tunability game and get interaction values
-        tg = MistunabilityGame(
+        game = MistunabilityGame(
             explanation_task=mistunability_task,
-            cs_searcher=RandomConfigSpaceSearcher(
-                explanation_task=mistunability_task,
-                n_samples=n_samples,
-                mode="min",
-            ),
             n_workers=self.n_workers,
             verbose=self.verbose,
         )
-        return self.__get_interaction_values(game=tg, index=index, order=order)
+        game.cs_searcher.n_samples = n_samples
+        return self.__get_interaction_values(game=game, index=index, order=order)
 
     def optimizer_bias(
         self,
@@ -298,8 +285,8 @@ class HyperSHAP:
         )
 
         # setup optimizer bias game and get interaction values
-        og = OptimizerBiasGame(explanation_task=optimizer_bias_task, n_workers=self.n_workers, verbose=self.verbose)
-        return self.__get_interaction_values(game=og, index=index, order=order)
+        game = OptimizerBiasGame(explanation_task=optimizer_bias_task, n_workers=self.n_workers, verbose=self.verbose)
+        return self.__get_interaction_values(game=game, index=index, order=order)
 
     def plot_si_graph(
         self,

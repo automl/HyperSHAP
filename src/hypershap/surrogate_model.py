@@ -106,8 +106,8 @@ class SurrogateModel(ABC):
 
         """
         res = self.evaluate(np.array(config.get_array()))
-        if not isinstance(res, float):
-            raise TypeError
+        if not isinstance(res, float):  # pragma: no cover
+            raise TypeError  # pragma: no cover
         return res
 
     def evaluate_config_batch(self, config_batch: list[Configuration]) -> list[float]:
