@@ -9,7 +9,19 @@ copyright: Maintained by <a href="https://ai.uni-hannover.de">LUH-AI</a>.
 
 nav:
   - Home: index.md
-  - Modules: modules.md
+  - Getting Started: getting_started.md
+  - API Reference:
+    - HyperSHAP: api/hypershap.md
+    - Tasks: api/task.md
+    - Games: api/games.md
+    - Surrogate Model: api/surrogate_model.md
+    - Utils: api/utils.md
+  - Need Help?: help.md
+
+  - How to Contribute: contribute.md
+  - Cite HyperSHAP: cite.md
+  - Authors: authors.md
+  - License: license.md
 
 docs_dir: docs
 
@@ -56,3 +68,4 @@ markdown_extensions:
       permalink: true
   - pymdownx.arithmatex:
       generic: true
+  - attr_list
