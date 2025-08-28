@@ -21,7 +21,7 @@ dependencies = [
     "numpy>=2.2.6",
     "scikit-learn>=1.7.1",
     "matplotlib>=3.10.5",
-    "networkx>=3.4.2",
+    "networkx>=3.4.2"
 ]
 
 [project.urls]
@@ -58,6 +58,10 @@ dev = [
     {include-group = "test"},
     {include-group = "lint"},
     {include-group = "docs"}
+]
+
+carps = [
+    "carps>=1.0.4"
 ]
 
 [build-system]
