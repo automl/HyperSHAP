@@ -32,9 +32,7 @@ def evaluate_aggregation(aggregation: Aggregation, values: np.ndarray) -> float:
         return values.max()
     if aggregation == Aggregation.MIN:
         return values.min()
-    if aggregation == Aggregation.VAR:
-        return values.var()
-    raise ValueError
+    return values.var()
 
 
 class ConfigSpaceSearcher(ABC):
