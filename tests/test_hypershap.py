@@ -58,6 +58,16 @@ def test_ablation(hypershap_inst: HyperSHAP, simple_base_et: ExplanationTask) ->
     assert hypershap_inst.last_interaction_values is not None
 
 
+def test_ablation_multibaseline(hypershap_inst: HyperSHAP, simple_base_et: ExplanationTask) -> None:
+    """Test the ablation game."""
+    hypershap_inst.last_interaction_values = None
+    config_of_interest = Configuration(simple_base_et.config_space, vector=np.array([1.0, 1.0]))
+    baseline_configs = simple_base_et.config_space.sample_configuration(3)
+    iv = hypershap_inst.ablation_multibaseline(config_of_interest, baseline_configs)
+    assert iv is not None, "Interaction values should not be none"
+    assert hypershap_inst.last_interaction_values is not None
+
+
 def test_tunability(hypershap_inst: HyperSHAP, simple_base_et: ExplanationTask) -> None:
     """Test the tunability game."""
     hypershap_inst.last_interaction_values = None
@@ -174,28 +184,28 @@ def test_no_interaction_values(hypershap_inst: HyperSHAP) -> None:
     hypershap_inst.last_interaction_values = None
 
     # check si graph plot
+    exception_raise = False
     try:
         hypershap_inst.plot_si_graph(no_show=True)
     except NoInteractionValuesError:
-        assert True, "No interaction values error is expected to be raised"
-    else:
-        pytest.fail("No interaction values error is expected to be raised")
+        exception_raise = True
+    assert exception_raise, "No interaction values error is expected to be raised"
 
     # check force plot
+    exception_raise = False
     try:
         hypershap_inst.plot_force(no_show=True)
     except NoInteractionValuesError:
-        assert True, "No interaction values error is expected to be raised"
-    else:
-        pytest.fail("No interaction values error is expected to be raised")
+        exception_raise = True
+    assert exception_raise, "No interaction values error is expected to be raised"
 
     # check force plot
+    exception_raise = False
     try:
         hypershap_inst.plot_upset(no_show=True)
     except NoInteractionValuesError:
-        assert True, "No interaction values error is expected to be raised"
-    else:
-        pytest.fail("No interaction values error is expected to be raised")
+        exception_raise = True
+    assert exception_raise, "No interaction values error is expected to be raised"
 
 
 def test_parallel_evaluation(hypershap_inst: HyperSHAP) -> None:
@@ -206,5 +216,5 @@ def test_parallel_evaluation(hypershap_inst: HyperSHAP) -> None:
         hypershap_inst.explanation_task.config_space.get_default_configuration(),
         n_samples=50_000,
     )
-    assert hypershap_inst.last_interaction_values is not None
     _assert_interaction_values(iv)
+    assert hypershap_inst.last_interaction_values is not None

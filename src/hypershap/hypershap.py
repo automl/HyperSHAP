@@ -24,6 +24,7 @@ from hypershap.games import (
     AblationGame,
     AbstractHPIGame,
     MistunabilityGame,
+    MultiBaselineAblationGame,
     OptimizerBiasGame,
     SensitivityGame,
     TunabilityGame,
@@ -32,6 +33,7 @@ from hypershap.task import (
     AblationExplanationTask,
     ExplanationTask,
     MistunabilityExplanationTask,
+    MultiBaselineAblationExplanationTask,
     OptimizerBiasExplanationTask,
     SensitivityExplanationTask,
     TunabilityExplanationTask,
@@ -139,6 +141,44 @@ class HyperSHAP:
         # setup ablation game and get interaction values
         ag = AblationGame(
             explanation_task=ablation_task,
+            n_workers=self.n_workers,
+            verbose=self.verbose,
+        )
+        return self.__get_interaction_values(game=ag, index=index, order=order)
+
+    def ablation_multibaseline(
+        self,
+        config_of_interest: Configuration,
+        baseline_configs: list[Configuration],
+        aggregation: Aggregation = Aggregation.AVG,
+        index: str = "FSII",
+        order: int = 2,
+    ) -> InteractionValues:
+        """Compute and return the interaction values for multi-baseline ablation analysis.
+
+        Args:
+            config_of_interest (Configuration): The configuration of interest.
+            baseline_configs (list[Configuration]): The list of baseline configurations.
+            aggregation (Aggregation): The aggregation method to use for computing interaction values.
+            index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
+            order (int, optional): The order of the interaction values. Defaults to 2.
+
+        Returns:
+            InteractionValues: The computed interaction values.
+
+        """
+        # setup explanation task
+        multibaseline_ablation_task = MultiBaselineAblationExplanationTask(
+            config_space=self.explanation_task.config_space,
+            surrogate_model=self.explanation_task.surrogate_model,
+            baseline_configs=baseline_configs,
+            config_of_interest=config_of_interest,
+        )
+
+        # setup ablation game and get interaction values
+        ag = MultiBaselineAblationGame(
+            explanation_task=multibaseline_ablation_task,
+            aggregation=aggregation,
             n_workers=self.n_workers,
             verbose=self.verbose,
         )

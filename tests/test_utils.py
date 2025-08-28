@@ -13,11 +13,13 @@ if TYPE_CHECKING:
     from tests.fixtures.simple_setup import SimpleBlackboxFunction
 
 from hypershap.task import BaselineExplanationTask
-from hypershap.utils import Aggregation, RandomConfigSpaceSearcher
+from hypershap.utils import Aggregation, RandomConfigSpaceSearcher, evaluate_aggregation
 
 DEFAULT_MODE = Aggregation.MAX
 N_SAMPLES = 50_000
 EPSILON = 0.2
+
+AGG_LIST = [0.1, 0.2, 0.6]
 
 
 @pytest.fixture(scope="module")
@@ -133,3 +135,13 @@ def test_baseline_coalition_var_search(
     assert abs(res - expected_var < EPSILON), (
         "If no hyperparameter is activated for searching, the variance should be 0."
     )
+
+
+def test_evaluate_aggregation() -> None:
+    """Test the evaluation of aggregation function."""
+    vals = np.array(AGG_LIST)
+
+    assert evaluate_aggregation(Aggregation.MIN, vals) == AGG_LIST[0]
+    assert evaluate_aggregation(Aggregation.MAX, vals) == AGG_LIST[2]
+    assert evaluate_aggregation(Aggregation.AVG, vals) == np.array(AGG_LIST).mean()
+    assert abs(evaluate_aggregation(Aggregation.VAR, vals) - np.array(AGG_LIST).var()) < EPSILON
