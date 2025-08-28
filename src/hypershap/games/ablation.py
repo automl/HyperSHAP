@@ -27,7 +27,8 @@ from __future__ import annotations
 import numpy as np
 
 from hypershap.games.abstract import AbstractHPIGame
-from hypershap.task import AblationExplanationTask
+from hypershap.task import AblationExplanationTask, MultiBaselineAblationExplanationTask
+from hypershap.utils import Aggregation, evaluate_aggregation
 
 
 class AblationGame(AbstractHPIGame):
@@ -100,3 +101,48 @@ class AblationGame(AbstractHPIGame):
             return self.explanation_task
 
         raise ValueError  # pragma: no cover
+
+
+class MultiBaselineAblationGame(AbstractHPIGame):
+    """The multi-baseline ablation game generates local explanations for hyperparameter configurations.
+
+    It does so by considering multiple baseline configurations as starting points.
+    """
+
+    def __init__(
+        self,
+        explanation_task: MultiBaselineAblationExplanationTask,
+        aggregation: Aggregation = Aggregation.AVG,
+        n_workers: int | None = None,
+        verbose: bool | None = None,
+    ) -> None:
+        """Initialize a MultiBaselineAblationGame.
+
+        n_workers (int | None): The number of worker threads to use for parallel
+            evaluation of coalitions. Defaults to None, which disables parallelization.
+            Using more workers can significantly speed up the computation of Shapley values.
+            The maximum number of workers is capped by the number of coalitions.
+        verbose (bool | None): A boolean indicating whether to print verbose messages
+            during computation. Defaults to None. When set to True, the method prints
+            debugging information and progress updates.
+        """
+        self.aggregation = aggregation
+        self.ablation_games = [
+            AblationGame(
+                AblationExplanationTask(
+                    config_space=explanation_task.config_space,
+                    surrogate_model=explanation_task.surrogate_model,
+                    baseline_config=baseline_config,
+                    config_of_interest=explanation_task.config_of_interest,
+                ),
+                n_workers=n_workers,
+                verbose=verbose,
+            )
+            for baseline_config in explanation_task.baseline_configs
+        ]
+        super().__init__(explanation_task, n_workers, verbose)
+
+    def evaluate_single_coalition(self, coalition: np.ndarray) -> float:
+        """Evaluate a single coalition (combination of baseline and optimized hyperparameters)."""
+        vals = np.array([ag.evaluate_single_coalition(coalition) for ag in self.ablation_games])
+        return evaluate_aggregation(self.aggregation, vals)

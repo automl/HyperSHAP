@@ -181,6 +181,25 @@ class AblationExplanationTask(BaselineExplanationTask):
         self.config_of_interest = config_of_interest
 
 
+class MultiBaselineAblationExplanationTask(MultiBaselineExplanationTask):
+    """Defines an ablation explanation task with multiple baseline configurations."""
+
+    def __init__(
+        self,
+        config_space: ConfigurationSpace,
+        surrogate_model: SurrogateModel,
+        baseline_configs: list[Configuration],
+        config_of_interest: Configuration,
+    ) -> None:
+        """Initialize an MultiBaselineAblationExplanationTask with a list of baseline configurations."""
+        super().__init__(
+            config_space,
+            surrogate_model,
+            baseline_configs,
+        )
+        self.config_of_interest = config_of_interest
+
+
 class SensitivityExplanationTask(BaselineExplanationTask):
     """Defines a sensitivity explanation task."""
 

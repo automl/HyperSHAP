@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 from hypershap import ExplanationTask, HyperSHAP
 from hypershap.hypershap import NoInteractionValuesError
 from hypershap.task import BaselineExplanationTask
-from hypershap.utils import RandomConfigSpaceSearcher
+from hypershap.utils import Aggregation, RandomConfigSpaceSearcher
 
 EPSILON = 0.2
 EXPECTED_A = 0.7
@@ -125,7 +125,7 @@ def test_optimizerbias(hypershap_inst: HyperSHAP, simple_base_et: ExplanationTas
         baseline_config=simple_base_et.config_space.get_default_configuration(),
     )
 
-    opt_of_interest = RandomConfigSpaceSearcher(baseline_et, mode="min")
+    opt_of_interest = RandomConfigSpaceSearcher(baseline_et, mode=Aggregation.MIN)
     ensemble = [RandomConfigSpaceSearcher(baseline_et)] * 3
 
     iv = hypershap_inst.optimizer_bias(opt_of_interest, ensemble)

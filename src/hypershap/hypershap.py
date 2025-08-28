@@ -36,7 +36,7 @@ from hypershap.task import (
     SensitivityExplanationTask,
     TunabilityExplanationTask,
 )
-from hypershap.utils import RandomConfigSpaceSearcher
+from hypershap.utils import Aggregation, RandomConfigSpaceSearcher
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +179,7 @@ class HyperSHAP:
             cs_searcher=RandomConfigSpaceSearcher(
                 explanation_task=tunability_task,
                 n_samples=n_samples,
-                mode="max",
+                mode=Aggregation.MAX,
             ),
             n_workers=self.n_workers,
             verbose=self.verbose,
@@ -221,7 +221,7 @@ class HyperSHAP:
             cs_searcher=RandomConfigSpaceSearcher(
                 explanation_task=sensitivity_task,
                 n_samples=n_samples,
-                mode="var",
+                mode=Aggregation.VAR,
             ),
             n_workers=self.n_workers,
             verbose=self.verbose,
@@ -263,7 +263,7 @@ class HyperSHAP:
             cs_searcher=RandomConfigSpaceSearcher(
                 explanation_task=mistunability_task,
                 n_samples=n_samples,
-                mode="min",
+                mode=Aggregation.MIN,
             ),
             n_workers=self.n_workers,
             verbose=self.verbose,

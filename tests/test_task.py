@@ -15,6 +15,7 @@ from hypershap import ExplanationTask
 from hypershap.task import (
     BaselineExplanationTask,
     MistunabilityExplanationTask,
+    MultiBaselineAblationExplanationTask,
     MultiBaselineExplanationTask,
     OptimizerBiasExplanationTask,
     SensitivityExplanationTask,
@@ -108,6 +109,28 @@ def test_multibaseline_explanation_task(simple_base_et: ExplanationTask) -> None
     assert et.baseline_configs == baseline_configs, (
         "Multibaseline explanation task should have the proper baseline configs."
     )
+
+
+def test_multibaseline_ablation_explanation_task(
+    simple_base_et: ExplanationTask,
+) -> None:
+    """Test the instantiation of a multibaseline ablation explanation task."""
+    baseline_configs = simple_base_et.config_space.sample_configuration(2)
+    config_of_interest = simple_base_et.config_space.sample_configuration()
+    et = MultiBaselineAblationExplanationTask(
+        simple_base_et.config_space,
+        simple_base_et.surrogate_model,
+        baseline_configs,
+        config_of_interest,
+    )
+    assert et.config_space == simple_base_et.config_space, "Explanation task should have the proper config space."
+    assert et.surrogate_model == simple_base_et.surrogate_model, (
+        "Explanation task should have the proper surrogate model."
+    )
+    assert et.baseline_configs == baseline_configs, (
+        "Multibaseline ablation explanation task should have the proper baseline_configs."
+    )
+    assert et.config_of_interest == config_of_interest, "Config of interest should be set correctly."
 
 
 def test_tunability_explanation_task(simple_base_et: ExplanationTask) -> None:

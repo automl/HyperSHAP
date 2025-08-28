@@ -14,7 +14,7 @@ from hypershap.task import (
     SensitivityExplanationTask,
     TunabilityExplanationTask,
 )
-from hypershap.utils import RandomConfigSpaceSearcher
+from hypershap.utils import Aggregation, RandomConfigSpaceSearcher
 
 
 def test_reparametrization(simple_base_et: ExplanationTask) -> None:
@@ -34,9 +34,9 @@ def test_reparametrization(simple_base_et: ExplanationTask) -> None:
         bet.baseline_config,
     )
     # expect max as search mode so set it to min before
-    rccs.mode = "min"
+    rccs.mode = Aggregation.MIN
     TunabilityGame(tet, rccs)
-    assert rccs.mode == "max", "Game mode should have been set to 'max'."
+    assert rccs.mode == Aggregation.MAX, "Game mode should have been set to 'max'."
 
     game = TunabilityGame(tet)
     assert game.cs_searcher is not None, "ConfigSpace searcher should be set."
@@ -49,7 +49,7 @@ def test_reparametrization(simple_base_et: ExplanationTask) -> None:
     )
     # expect var as search mode and should be max before according to assert
     SensitivityGame(senset, rccs)
-    assert rccs.mode == "var", "Game mode should have been set to 'var'."
+    assert rccs.mode == Aggregation.VAR, "Game mode should have been set to 'var'."
 
     game = SensitivityGame(senset)
     assert game.cs_searcher is not None, "ConfigSpace searcher should be set."
@@ -60,7 +60,7 @@ def test_reparametrization(simple_base_et: ExplanationTask) -> None:
         bet.baseline_config,
     )
     MistunabilityGame(met, rccs)
-    assert rccs.mode == "min", "Game mode should have been set to 'min'."
+    assert rccs.mode == Aggregation.MIN, "Game mode should have been set to 'min'."
 
     game = MistunabilityGame(met)
     assert game.cs_searcher is not None, "ConfigSpace searcher should be set."
