@@ -468,3 +468,71 @@ class HyperSHAP:
 
         if no_show is None or not no_show:  # pragma: no cover
             plt.show()  # pragma: no cover
+
+    def plot_waterfall(
+        self,
+        interaction_values: InteractionValues | None = None,
+        save_path: str | None = None,
+        no_show: bool | None = None,
+    ) -> None:
+        """Plot the SHAP interaction values as a waterfall graph.
+
+        Args:
+            interaction_values: Interaction values to plot. Defaults to None.
+            save_path: The path to save the plot. Defaults to None.
+            no_show (bool | None, optional): Do not show the plot if set to true. Defaults to None.
+
+        """
+        if interaction_values is None and self.last_interaction_values is None:
+            raise NoInteractionValuesError
+
+        # if given interaction values use those, else use cached interaction values
+        iv = interaction_values if interaction_values is not None else self.last_interaction_values
+
+        if not isinstance(iv, InteractionValues):  # pragma: no cover
+            raise TypeError  # pragma: no cover
+
+        hyperparameter_names = self.explanation_task.get_hyperparameter_names()
+
+        iv.plot_waterfall(feature_names=np.array(hyperparameter_names), show=False)
+        plt.tight_layout()
+
+        if save_path is not None:
+            plt.savefig(save_path)
+
+        if no_show is None or not no_show:  # pragma: no cover
+            plt.show()  # pragma: no cover
+
+    def plot_stacked_bar(
+        self,
+        interaction_values: InteractionValues | None = None,
+        save_path: str | None = None,
+        no_show: bool | None = None,
+    ) -> None:
+        """Plot the SHAP interaction values as a stacked bar chart.
+
+        Args:
+            interaction_values: Interaction values to plot. Defaults to None.
+            save_path: The path to save the plot. Defaults to None.
+            no_show (bool | None, optional): Do not show the plot if set to true. Defaults to None.
+
+        """
+        if interaction_values is None and self.last_interaction_values is None:
+            raise NoInteractionValuesError
+
+        # if given interaction values use those, else use cached interaction values
+        iv = interaction_values if interaction_values is not None else self.last_interaction_values
+
+        if not isinstance(iv, InteractionValues):  # pragma: no cover
+            raise TypeError  # pragma: no cover
+
+        hyperparameter_names = self.explanation_task.get_hyperparameter_names()
+
+        iv.plot_stacked_bar(feature_names=np.array(hyperparameter_names), show=False)
+        plt.tight_layout()
+
+        if save_path is not None:
+            plt.savefig(save_path)
+
+        if no_show is None or not no_show:  # pragma: no cover
+            plt.show()  # pragma: no cover

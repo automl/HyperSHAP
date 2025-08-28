@@ -179,6 +179,28 @@ def test_plot_upset_plot(hypershap_inst: HyperSHAP, tunability_iv: InteractionVa
     Path(filename).unlink()
 
 
+def test_plot_waterfall_plot(hypershap_inst: HyperSHAP, tunability_iv: InteractionValues) -> None:
+    """Test to plot an upset plot."""
+    filename = "test-waterfall.png"
+    if Path(filename).is_file():
+        Path(filename).unlink()
+    hypershap_inst.plot_waterfall(tunability_iv, save_path=filename, no_show=True)
+    assert Path(filename).is_file(), "no output file was created"
+    # tidy up
+    Path(filename).unlink()
+
+
+def test_plot_stacked_barchart(hypershap_inst: HyperSHAP, tunability_iv: InteractionValues) -> None:
+    """Test to plot an upset plot."""
+    filename = "test-stacked-bar.png"
+    if Path(filename).is_file():
+        Path(filename).unlink()
+    hypershap_inst.plot_stacked_bar(tunability_iv, save_path=filename, no_show=True)
+    assert Path(filename).is_file(), "no output file was created"
+    # tidy up
+    Path(filename).unlink()
+
+
 def test_no_interaction_values(hypershap_inst: HyperSHAP) -> None:
     """Test that an error is raised when no interaction values are provided."""
     hypershap_inst.last_interaction_values = None
@@ -203,6 +225,22 @@ def test_no_interaction_values(hypershap_inst: HyperSHAP) -> None:
     exception_raise = False
     try:
         hypershap_inst.plot_upset(no_show=True)
+    except NoInteractionValuesError:
+        exception_raise = True
+    assert exception_raise, "No interaction values error is expected to be raised"
+
+    # check waterfall plot
+    exception_raise = False
+    try:
+        hypershap_inst.plot_waterfall(no_show=True)
+    except NoInteractionValuesError:
+        exception_raise = True
+    assert exception_raise, "No interaction values error is expected to be raised"
+
+    # check stacked barchart
+    exception_raise = False
+    try:
+        hypershap_inst.plot_stacked_bar(no_show=True)
     except NoInteractionValuesError:
         exception_raise = True
     assert exception_raise, "No interaction values error is expected to be raised"

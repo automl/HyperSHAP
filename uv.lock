@@ -1304,7 +1304,6 @@ name = "hypershap"
 version = "0.0.2"
 source = { editable = "." }
 dependencies = [
-    { name = "carps" },
     { name = "matplotlib" },
     { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "networkx", version = "3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -1355,7 +1354,6 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "carps", specifier = ">=1.0.4" },
     { name = "matplotlib", specifier = ">=3.10.5" },
     { name = "networkx", specifier = ">=3.4.2" },
     { name = "numpy", specifier = ">=2.2.6" },

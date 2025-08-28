@@ -74,14 +74,14 @@ The example demonstrates how to:
 
 ## API Overview
 
-| Method | Purpose | Key Arguments |
-|--------|---------|---------------|
-| `HyperSHAP(explanation_task)` | Initialise the explainer with a generic `ExplanationTask`. |
+| Method | Purpose                                                                                                                           | Key Arguments |
+|--------|-----------------------------------------------------------------------------------------------------------------------------------|---------------|
+| `HyperSHAP(explanation_task)` | Initialize the explainer with a generic `ExplanationTask`.                                                                        |
 | `ablation(config_of_interest, baseline_config, index="FSII", order=2)` | Explain the contribution of each hyperparameter value (and interactions) when moving from a baseline to a specific configuration. |
-| `tunability(baseline_config=None, index="FSII", order=2, n_samples=10_000)` | Quantify how much performance can be gained by tuning subsets of hyper‑parameters. |
-| `optimizer_bias(optimizer_of_interest, optimizer_ensemble, index="FSII", order=2)` | Attribute performance differences to a particular optimizer vs. an ensemble of optimizers. |
-| `plot_si_graph(interaction_values=None, save_path=None)` | Plot the Shapley Interaction (SI) graph; uses the most recent interaction values if none are supplied. |
-| `ExplanationTask.get_hyperparameter_names()` | Helper to retrieve ordered hyper‑parameter names (used for visualisation). |
+| `tunability(baseline_config=None, index="FSII", order=2, n_samples=10_000)` | Quantify how much performance can be gained by tuning subsets of hyper‑parameters.                                                |
+| `optimizer_bias(optimizer_of_interest, optimizer_ensemble, index="FSII", order=2)` | Attribute performance differences to a particular optimizer vs. an ensemble of optimizers.                                        |
+| `plot_si_graph(interaction_values=None, save_path=None)` | Plot the Shapley Interaction (SI) graph; uses the most recent interaction values if none are supplied.                            |
+| `ExplanationTask.get_hyperparameter_names()` | Helper to retrieve ordered hyper‑parameter names (used for visualisation).                                                        |
 
 All methods return an `InteractionValues` object (from **shapiq**) that can be inspected, saved, or passed to the visualisation routine.
 
@@ -121,11 +121,11 @@ The paper introduces the underlying game-theoretic framework and demonstrates it
 
 Contributions are welcome! Please follow these steps:
 
-     Fork the repo and create a feature branch (git checkout -b feat/your-feature).
-     Write tests (the project uses pytest).
-     Ensure all tests pass (pytest).
-     Update documentation if you add new functionality.
-     Submit a Pull Request with a clear description of the changes.
+1. Fork the repo and create a feature branch (git checkout -b feat/your-feature).
+2. Write tests (the project uses pytest).
+3. Ensure all tests pass (pytest).
+4. Update documentation if you add new functionality.
+5. Submit a Pull Request with a clear description of the changes.
 
 
 See CONTRIBUTING.md for detailed guidelines.
