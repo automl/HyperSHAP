@@ -18,7 +18,7 @@ import logging
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-from shapiq import ExactComputer, InteractionValues
+from shapiq import SHAPIQ, ExactComputer, InteractionValues
 
 from hypershap.games import (
     AblationGame,
@@ -41,6 +41,8 @@ from hypershap.task import (
 from hypershap.utils import Aggregation, RandomConfigSpaceSearcher
 
 logger = logging.getLogger(__name__)
+
+EXACT_MAX_HYPERPARAMETERS = 14
 
 
 class NoInteractionValuesError(ValueError):
@@ -100,11 +102,18 @@ class HyperSHAP:
         self.verbose = verbose
 
     def __get_interaction_values(self, game: AbstractHPIGame, index: str = "FSII", order: int = 2) -> InteractionValues:
-        # instantiate exact computer if number of hyperparameters is small enough
-        ec = ExactComputer(n_players=game.get_num_hyperparameters(), game=game)  # pyright: ignore
+        if game.n_players <= EXACT_MAX_HYPERPARAMETERS:
+            # instantiate exact computer if number of hyperparameters is small enough
+            ec = ExactComputer(n_players=game.get_num_hyperparameters(), game=game)  # pyright: ignore
 
-        # compute interaction values with the given index and order
-        interaction_values = ec(index=index, order=order)
+            # compute interaction values with the given index and order
+            interaction_values = ec(index=index, order=order)
+        else:
+            # instantiate kernel
+            approx = SHAPIQ(n=game.n_players, max_order=2, index=index)
+
+            # approximate interaction values with the given index and order
+            interaction_values = approx(budget=2**EXACT_MAX_HYPERPARAMETERS, game=game)
 
         # cache current interaction values for plotting shortcuts
         self.last_interaction_values = interaction_values
