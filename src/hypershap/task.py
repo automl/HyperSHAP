@@ -49,6 +49,30 @@ class ExplanationTask:
         """
         return isinstance(self.surrogate_model, list)
 
+    def get_single_surrogate_model(self) -> SurrogateModel:
+        """Return the surrogate model for the explanation task.
+
+        Returns:
+            The surrogate model for the explanation task.
+
+        """
+        if isinstance(self.surrogate_model, list):
+            raise TypeError
+
+        return self.surrogate_model
+
+    def get_surrogate_model_list(self) -> list[SurrogateModel]:
+        """Return the list of surrogate models for the explanation task.
+
+        Returns:
+            The list of surrogate models for the explanation task.
+
+        """
+        if not isinstance(self.surrogate_model, list):
+            raise TypeError
+
+        return self.surrogate_model
+
     def get_num_hyperparameters(self) -> int:
         """Return the number of hyperparameters in the configuration space.
 
@@ -135,7 +159,66 @@ class ExplanationTask:
         n_samples: int = 1_000,
         base_model: BaseEstimator | None = None,
     ) -> ExplanationTask:
-        """Create an ExplanationTask from a list of functions that evaluate configurations."""
+        """Create an ExplanationTask from a list of functions that evaluate configurations.
+
+        Args:
+            config_space: The configuration space.
+            functions: A list of callables that take a configuration and returns its performance.
+            n_samples: The number of configurations to sample for training the surrogate model. Defaults to 1000.
+            base_model: The base model to be used for training the surrogate model. Defaults to RandomForestRegressor.
+
+        Returns:
+            An ExplanationTask instance.
+
+        """
+        surrogate_model_list = [
+            ExplanationTask.from_function(config_space, fun, n_samples, base_model).get_single_surrogate_model()
+            for fun in functions
+        ]
+        return ExplanationTask(config_space=config_space, surrogate_model=surrogate_model_list)
+
+    @staticmethod
+    def from_data_multidata(
+        config_space: ConfigurationSpace,
+        data_multidata: list[list[tuple[Configuration, float]]],
+        base_model: BaseEstimator | None = None,
+    ) -> ExplanationTask:
+        """Create an ExplanationTask from a list of datasets of different HPO tasks.
+
+        Args:
+            config_space: The configuration space.
+            data_multidata: A list of tuples, where each tuple contains a configuration and its corresponding performance.
+            base_model: The base model to use for training the surrogate model. Defaults to RandomForestRegressor.
+
+        Returns:
+            An ExplanationTask instance.
+
+        """
+        surrogate_model_list = [
+            ExplanationTask.from_data(config_space, data, base_model).get_single_surrogate_model()
+            for data in data_multidata
+        ]
+        return ExplanationTask(config_space=config_space, surrogate_model=surrogate_model_list)
+
+    @staticmethod
+    def from_basemodel_multidata(
+        config_space: ConfigurationSpace,
+        base_model: list[BaseEstimator],
+    ) -> ExplanationTask:
+        """Create an ExplanationTask from a list of datasets of different HPO tasks.
+
+        Args:
+            config_space: The configuration space.
+            base_model: The list of base models to be used as surrogate models.
+
+        Returns:
+            An ExplanationTask instance.
+
+        """
+        surrogate_model_list: list[SurrogateModel] = [
+            ModelBasedSurrogateModel(config_space=config_space, base_model=m) for m in base_model
+        ]
+        return ExplanationTask(config_space=config_space, surrogate_model=surrogate_model_list)
 
 
 class BaselineExplanationTask(ExplanationTask):

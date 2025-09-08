@@ -79,7 +79,11 @@ class AblationGame(AbstractHPIGame):
         baseline_cfg = self._get_explanation_task().baseline_config.get_array()
         cfg_of_interest = self._get_explanation_task().config_of_interest.get_array()
         blend = np.where(coalition == 0, baseline_cfg, cfg_of_interest)
-        res = self._get_explanation_task().surrogate_model.evaluate(blend)
+
+        if isinstance(self._get_explanation_task().surrogate_model, list):
+            raise TypeError
+
+        res = self._get_explanation_task().get_single_surrogate_model().evaluate(blend)
 
         # validate that we do not get a list of floats by accident
         if isinstance(res, list):  # pragma: no cover

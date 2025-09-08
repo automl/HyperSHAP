@@ -25,7 +25,6 @@ if TYPE_CHECKING:
     from hypershap.task import (
         BaselineExplanationTask,
         MistunabilityExplanationTask,
-        MultiDataBaselineExplanationTask,
         SensitivityExplanationTask,
         TunabilityExplanationTask,
     )
@@ -189,7 +188,7 @@ class MultiDataSearchBasedGame(AbstractHPIGame):
 
     def __init__(
         self,
-        explanation_task: MultiDataBaselineExplanationTask,
+        explanation_task: BaselineExplanationTask,
         base_game: SearchBasedGame,
         aggregation: Aggregation,
     ) -> None:
