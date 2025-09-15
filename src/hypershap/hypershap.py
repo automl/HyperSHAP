@@ -84,6 +84,7 @@ class HyperSHAP:
         self,
         explanation_task: ExplanationTask,
         n_workers: int | None = None,
+        max_hyperparameters_exact: int | None = None,
         approximation_budget: int | None = None,
         verbose: bool | None = None,
     ) -> None:
@@ -94,6 +95,9 @@ class HyperSHAP:
             n_workers: The number of worker threads to use for parallel evaluation
                 of coalitions. Defaults to None meaning no parallelization.  Using more workers can significantly
                 speed up the computation of Shapley values.  The maximum number of workers is capped by the number of coalitions.
+            max_hyperparameters_exact: The maximum number of hyperparameters to compute exactly. Defaults to 14. If this number of
+                hyperparameters is exceeded, the Shapley values and interactions will be approximated by a sampling method with a
+                budget set via `approximation_budget`.
             approximation_budget: The budget to be used for approximating Shapley values when the number of hyperparameters exceeds
                 the maximum number of hyperparameters for computing exact values. Defaults to 2**14.
             verbose:  A boolean indicating whether to print verbose messages during
@@ -104,6 +108,9 @@ class HyperSHAP:
         self.explanation_task = explanation_task
         self.last_interaction_values = None
         self.n_workers = n_workers
+        self.max_hyperparameters_exact = (
+            max_hyperparameters_exact if max_hyperparameters_exact is not None else EXACT_MAX_HYPERPARAMETERS
+        )
         self.approximation_budget = (
             approximation_budget if approximation_budget is not None else 2**EXACT_MAX_HYPERPARAMETERS
         )
