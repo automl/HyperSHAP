@@ -29,8 +29,7 @@ class MultiDataHPIGame(AbstractHPIGame):
         """Initialize the multi-data game wrapper.
 
         Args:
-            explanation_task: The explanation task containing the configuration
-            space and surrogate model.
+            explanation_task: The explanation task containing the configuration space and surrogate model.
             base_game: The base game instance.
             aggregation: The aggregation method to use.
 

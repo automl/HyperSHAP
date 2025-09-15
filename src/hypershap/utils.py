@@ -53,7 +53,6 @@ class ConfigSpaceSearcher(ABC):
             explanation_task: The explanation task containing the configuration
                 space and surrogate model.
             mode: The aggregation mode for performance values.
-            allowed_modes: The list of allowed aggregation mode for performance values.
 
         """
         self.explanation_task = explanation_task
