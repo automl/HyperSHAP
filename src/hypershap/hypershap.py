@@ -414,6 +414,33 @@ class HyperSHAP:
         og = OptimizerBiasGame(explanation_task=optimizer_bias_task, n_workers=self.n_workers, verbose=self.verbose)
         return self.__get_interaction_values(game=og, index=index, order=order)
 
+    def get_interaction_values_with_names(self, iv: InteractionValues | None = None) -> dict[tuple, float]:
+        """Get the interaction values provided as argument or the last interaction values as a dict of hyperparameter names and their interaction values.
+
+        Args:
+            iv (InteractionValues | None): The interaction values to compute with.
+
+        Returns:
+            dict[Tuple, float]: A dictionary with a tuples of hyperparameter names as keys mapping to their interaction values.
+
+        """
+        # prioritize given iv's over last interaction values stored in the object
+        iv = iv if iv is not None else self.last_interaction_values
+
+        # check whether we now have actually interaction values if not: nothing to get here
+        if not isinstance(iv, InteractionValues):  # pragma: no cover
+            raise TypeError  # pragma: no cover
+
+        iv_mapped = {}
+        for key, value in iv.dict_values.items():
+            names = []
+            if len(key) == 0:
+                iv_mapped[()] = value
+                continue
+            names = [self.explanation_task.get_hyperparameter_names()[k] for k in key]
+            iv_mapped[tuple(names)] = value
+        return iv_mapped
+
     def plot_si_graph(
         self,
         interaction_values: InteractionValues | None = None,
