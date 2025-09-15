@@ -13,11 +13,13 @@ if TYPE_CHECKING:
     from tests.fixtures.simple_setup import SimpleBlackboxFunction
 
 from hypershap.task import BaselineExplanationTask
-from hypershap.utils import RandomConfigSpaceSearcher, UnknownModeError
+from hypershap.utils import Aggregation, RandomConfigSpaceSearcher, evaluate_aggregation
 
-DEFAULT_MODE = "max"
+DEFAULT_MODE = Aggregation.MAX
 N_SAMPLES = 50_000
 EPSILON = 0.2
+
+AGG_LIST = [0.1, 0.2, 0.6]
 
 
 @pytest.fixture(scope="module")
@@ -34,26 +36,6 @@ def random_cs(simple_base_et: ExplanationTask) -> RandomConfigSpaceSearcher:
         mode=DEFAULT_MODE,
         n_samples=N_SAMPLES,
     )
-
-
-def test_unavailable_mode(simple_base_et: ExplanationTask) -> None:
-    """Test that unavailable modes raise an exception."""
-    baseline_et = BaselineExplanationTask(
-        simple_base_et.config_space,
-        simple_base_et.surrogate_model,
-        baseline_config=simple_base_et.config_space.get_default_configuration(),
-    )
-
-    try:
-        RandomConfigSpaceSearcher(
-            explanation_task=baseline_et,
-            mode="abc",
-            n_samples=N_SAMPLES,
-        )
-    except UnknownModeError:
-        assert True, "Unknown mode error expected"
-    else:
-        pytest.fail("Unknown mode error expected")
 
 
 def test_n_samples(random_cs: RandomConfigSpaceSearcher) -> None:
@@ -101,7 +83,7 @@ def test_grand_coalition_min_search(
 ) -> None:
     """Test random config space searcher for min aggregation."""
     et = random_cs.explanation_task
-    random_cs.mode = "min"
+    random_cs.mode = Aggregation.MIN
     res = random_cs.search(np.array([True] * random_cs.explanation_task.get_num_hyperparameters()))
 
     if isinstance(et.config_space["a"], UniformFloatHyperparameter) and isinstance(
@@ -125,9 +107,10 @@ def test_grand_coalition_avg_search(
 ) -> None:
     """Test random config space searcher for avg aggregation."""
     et = random_cs.explanation_task
-    random_cs.mode = "avg"
+    random_cs.mode = Aggregation.AVG
     res = random_cs.search(np.array([True] * random_cs.explanation_task.get_num_hyperparameters()))
 
+    avg_value = 0
     if isinstance(et.config_space["a"], UniformFloatHyperparameter) and isinstance(
         et.config_space["b"],
         UniformFloatHyperparameter,
@@ -137,8 +120,6 @@ def test_grand_coalition_avg_search(
         a_middle = a.lower + (a.upper - a.lower) / 2
         b_middle = b.lower + (b.upper - b.lower) / 2
         avg_value = simple_blackbox_function.value(a_middle, b_middle)
-    else:
-        raise TypeError
 
     assert abs(res - avg_value < EPSILON), "The avg aggregation should be equal to the middle performance."
 
@@ -147,7 +128,7 @@ def test_baseline_coalition_var_search(
     random_cs: RandomConfigSpaceSearcher,
 ) -> None:
     """Test random config space searcher for avg aggregation."""
-    random_cs.mode = "var"
+    random_cs.mode = Aggregation.VAR
     res = random_cs.search(np.array([False] * random_cs.explanation_task.get_num_hyperparameters()))
     expected_var = 0
     assert abs(res - expected_var < EPSILON), (
@@ -155,12 +136,11 @@ def test_baseline_coalition_var_search(
     )
 
 
-def test_unknown_aggregation_mode(random_cs: RandomConfigSpaceSearcher) -> None:
-    """Test whether unknown mode error is raised when mode is not known."""
-    random_cs.mode = "unknown"
-    try:
-        random_cs.search(np.array([False] * random_cs.explanation_task.get_num_hyperparameters()))
-    except UnknownModeError:
-        assert True, "Expected unknown mode to be raised."
-    else:
-        pytest.fail("Expected unknown mode to be raised.")
+def test_evaluate_aggregation() -> None:
+    """Test the evaluation of aggregation function."""
+    vals = np.array(AGG_LIST)
+
+    assert evaluate_aggregation(Aggregation.MIN, vals) == AGG_LIST[0]
+    assert evaluate_aggregation(Aggregation.MAX, vals) == AGG_LIST[2]
+    assert evaluate_aggregation(Aggregation.AVG, vals) == np.array(AGG_LIST).mean()
+    assert abs(evaluate_aggregation(Aggregation.VAR, vals) - np.array(AGG_LIST).var()) < EPSILON

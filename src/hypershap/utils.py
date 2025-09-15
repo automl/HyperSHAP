@@ -6,6 +6,7 @@ This module defines specific error classes for simpler debugging and interfaces 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -14,12 +15,24 @@ if TYPE_CHECKING:
 import numpy as np
 
 
-class UnknownModeError(ValueError):
-    """Raised when an unknown mode is encountered."""
+class Aggregation(Enum):
+    """Enum of aggregation functions for summarizing numpy arrays."""
 
-    def __init__(self) -> None:
-        """Initialize the unknown mode error."""
-        super().__init__("Unknown mode for the config space searcher.")
+    AVG = "avg"
+    MAX = "max"
+    MIN = "min"
+    VAR = "var"
+
+
+def evaluate_aggregation(aggregation: Aggregation, values: np.ndarray) -> float:
+    """Evaluate an aggregation function for a numpy array summarizing it to a single float."""
+    if aggregation == Aggregation.AVG:
+        return values.mean()
+    if aggregation == Aggregation.MAX:
+        return values.max()
+    if aggregation == Aggregation.MIN:
+        return values.min()
+    return values.var()
 
 
 class ConfigSpaceSearcher(ABC):
@@ -32,8 +45,7 @@ class ConfigSpaceSearcher(ABC):
     def __init__(
         self,
         explanation_task: BaselineExplanationTask,
-        mode: str = "max",
-        allowed_modes: list[str] | None = None,
+        mode: Aggregation,
     ) -> None:
         """Initialize the searcher with the explanation task.
 
@@ -41,17 +53,10 @@ class ConfigSpaceSearcher(ABC):
             explanation_task: The explanation task containing the configuration
                 space and surrogate model.
             mode: The aggregation mode for performance values.
-            allowed_modes: The list of allowed aggregation mode for performance values.
 
         """
         self.explanation_task = explanation_task
         self.mode = mode
-        self.allowed_modes = allowed_modes
-
-        if self.allowed_modes is None or mode in self.allowed_modes:
-            self.mode = mode
-        else:
-            raise UnknownModeError
 
     @abstractmethod
     def search(self, coalition: np.ndarray) -> float:
@@ -73,18 +78,22 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
     Useful for establishing baseline performance or approximating game values.
     """
 
-    def __init__(self, explanation_task: BaselineExplanationTask, mode: str = "max", n_samples: int = 10_000) -> None:
+    def __init__(
+        self,
+        explanation_task: BaselineExplanationTask,
+        mode: Aggregation = Aggregation.MAX,
+        n_samples: int = 10_000,
+    ) -> None:
         """Initialize the random configuration space searcher.
 
         Args:
             explanation_task: The explanation task containing the configuration
                 space and surrogate model.
-            mode: The aggregation mode for performance values ('max', 'min', 'avg', 'var').
+            mode: The aggregation mode for performance values.
             n_samples: The number of configurations to sample.
 
         """
-        allowed_modes = ["max", "min", "avg", "var"]
-        super().__init__(explanation_task, mode=mode, allowed_modes=allowed_modes)
+        super().__init__(explanation_task, mode=mode)
 
         sampled_configurations = self.explanation_task.config_space.sample_configuration(size=n_samples)
         self.random_sample = np.array([config.get_array() for config in sampled_configurations])
@@ -112,15 +121,5 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
         temp_random_sample[:, column_index] = self.explanation_task.baseline_config.get_array()[column_index]
 
         # predict performance values with the help of the surrogate model
-        vals: np.ndarray = np.array(self.explanation_task.surrogate_model.evaluate(temp_random_sample))
-
-        if self.mode == "max":
-            return vals.max()
-        if self.mode == "avg":
-            return vals.mean()
-        if self.mode == "min":
-            return vals.min()
-        if self.mode == "var":
-            return vals.var()
-
-        raise UnknownModeError
+        vals: np.ndarray = np.array(self.explanation_task.get_single_surrogate_model().evaluate(temp_random_sample))
+        return evaluate_aggregation(self.mode, vals)

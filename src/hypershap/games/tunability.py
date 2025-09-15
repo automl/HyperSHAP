@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     )
 
 from hypershap.games.abstract import AbstractHPIGame
-from hypershap.utils import ConfigSpaceSearcher, RandomConfigSpaceSearcher
+from hypershap.utils import Aggregation, ConfigSpaceSearcher, RandomConfigSpaceSearcher
 
 logger = logging.getLogger(__name__)
 
@@ -106,10 +106,10 @@ class TunabilityGame(SearchBasedGame):
         """
         # set cs searcher if not given by default to a random config space searcher.
         if cs_searcher is None:
-            cs_searcher = RandomConfigSpaceSearcher(explanation_task, mode="max")
-        elif cs_searcher.mode != "max":  # ensure that cs_searcher is maximizing
+            cs_searcher = RandomConfigSpaceSearcher(explanation_task, mode=Aggregation.MAX)
+        elif cs_searcher.mode != Aggregation.MAX:  # ensure that cs_searcher is maximizing
             logger.warning("WARN: Tunability game set mode of given ConfigSpaceSearcher to maximize.")
-            cs_searcher.mode = "max"
+            cs_searcher.mode = Aggregation.MAX
         super().__init__(explanation_task, cs_searcher, n_workers=n_workers, verbose=verbose)
 
 
@@ -140,10 +140,10 @@ class SensitivityGame(SearchBasedGame):
         """
         # set cs searcher if not given by default to a random config space searcher.
         if cs_searcher is None:
-            cs_searcher = RandomConfigSpaceSearcher(explanation_task, mode="var")
-        elif cs_searcher.mode != "var":  # ensure that cs_searcher is maximizing
+            cs_searcher = RandomConfigSpaceSearcher(explanation_task, mode=Aggregation.VAR)
+        elif cs_searcher.mode != Aggregation.VAR:  # ensure that cs_searcher is maximizing
             logger.warning("WARN: Sensitivity game set mode of given ConfigSpaceSearcher to variance.")
-            cs_searcher.mode = "var"
+            cs_searcher.mode = Aggregation.VAR
 
         super().__init__(explanation_task, cs_searcher, n_workers=n_workers, verbose=verbose)
 
@@ -175,9 +175,9 @@ class MistunabilityGame(SearchBasedGame):
         """
         # set cs searcher if not given by default to a random config space searcher.
         if cs_searcher is None:
-            cs_searcher = RandomConfigSpaceSearcher(explanation_task, mode="min")
-        elif cs_searcher.mode != "min":  # ensure that cs_searcher is maximizing
+            cs_searcher = RandomConfigSpaceSearcher(explanation_task, mode=Aggregation.MIN)
+        elif cs_searcher.mode != Aggregation.MIN:  # ensure that cs_searcher is maximizing
             logger.warning("WARN: Mistunability game set mode of given ConfigSpaceSearcher to minimize.")
-            cs_searcher.mode = "min"
+            cs_searcher.mode = Aggregation.MIN
 
         super().__init__(explanation_task, cs_searcher, n_workers=n_workers, verbose=verbose)
