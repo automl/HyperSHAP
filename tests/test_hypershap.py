@@ -246,3 +246,20 @@ def test_parallel_evaluation(hypershap_inst: HyperSHAP) -> None:
     )
     _assert_interaction_values(iv)
     assert hypershap_inst.last_interaction_values is not None
+
+
+def test_interaction_values_with_names(hypershap_inst: HyperSHAP, tunability_iv: InteractionValues) -> None:
+    """Test the interaction values with names."""
+    res_dict = hypershap_inst.get_interaction_values_with_names()
+    assert res_dict is not None, "No interaction values were returned"
+
+    res_dict2 = hypershap_inst.get_interaction_values_with_names(tunability_iv)
+    assert res_dict2 is not None, "No interaction values were returned"
+
+    hypershap_inst.last_interaction_values = None
+    error_raised = False
+    try:
+        hypershap_inst.get_interaction_values_with_names()
+    except TypeError:
+        error_raised = True
+    assert error_raised, "No interaction values should be present, so expecting an error to be raised."
