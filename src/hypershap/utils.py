@@ -32,9 +32,7 @@ def evaluate_aggregation(aggregation: Aggregation, values: np.ndarray) -> float:
         return values.max()
     if aggregation == Aggregation.MIN:
         return values.min()
-    if aggregation == Aggregation.VAR:
-        return values.var()
-    raise ValueError
+    return values.var()
 
 
 class ConfigSpaceSearcher(ABC):
@@ -55,7 +53,6 @@ class ConfigSpaceSearcher(ABC):
             explanation_task: The explanation task containing the configuration
                 space and surrogate model.
             mode: The aggregation mode for performance values.
-            allowed_modes: The list of allowed aggregation mode for performance values.
 
         """
         self.explanation_task = explanation_task
@@ -124,5 +121,5 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
         temp_random_sample[:, column_index] = self.explanation_task.baseline_config.get_array()[column_index]
 
         # predict performance values with the help of the surrogate model
-        vals: np.ndarray = np.array(self.explanation_task.surrogate_model.evaluate(temp_random_sample))
+        vals: np.ndarray = np.array(self.explanation_task.get_single_surrogate_model().evaluate(temp_random_sample))
         return evaluate_aggregation(self.mode, vals)

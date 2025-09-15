@@ -110,6 +110,7 @@ def test_grand_coalition_avg_search(
     random_cs.mode = Aggregation.AVG
     res = random_cs.search(np.array([True] * random_cs.explanation_task.get_num_hyperparameters()))
 
+    avg_value = 0
     if isinstance(et.config_space["a"], UniformFloatHyperparameter) and isinstance(
         et.config_space["b"],
         UniformFloatHyperparameter,
@@ -119,8 +120,6 @@ def test_grand_coalition_avg_search(
         a_middle = a.lower + (a.upper - a.lower) / 2
         b_middle = b.lower + (b.upper - b.lower) / 2
         avg_value = simple_blackbox_function.value(a_middle, b_middle)
-    else:
-        raise TypeError
 
     assert abs(res - avg_value < EPSILON), "The avg aggregation should be equal to the middle performance."
 

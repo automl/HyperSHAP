@@ -152,36 +152,6 @@ class ModelBasedSurrogateModel(SurrogateModel):
         super().__init__(config_space)
         self.base_model = base_model
 
-    def evaluate_config(self, config: Configuration) -> float:
-        """Evaluate a single configuration.
-
-        Args:
-            config: The configuration to evaluate.
-
-        Returns:
-            The predicted performance for the given configuration.
-
-        """
-        res = self.evaluate(config.get_array())
-        if not isinstance(res, float):  # pragma: no cover
-            raise TypeError  # pragma: no cover
-        return res
-
-    def evaluate_config_batch(self, config_batch: list[Configuration]) -> list[float]:
-        """Evaluate a batch of configurations.
-
-        Args:
-            config_batch: A list of configurations to evaluate.
-
-        Returns:
-            A list of predicted performances for the given configurations.
-
-        """
-        res = self.evaluate(np.array([config.get_array() for config in config_batch]))
-        if not isinstance(res, list):  # pragma: no cover
-            raise TypeError  # pragma: no cover
-        return res
-
     def evaluate(self, config_array: np.ndarray) -> float | list[float]:
         """Evaluate a configuration (or batch of configurations).
 
