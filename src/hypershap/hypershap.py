@@ -155,11 +155,14 @@ class HyperSHAP:
 
         """
         # setup explanation task
+        if isinstance(self.explanation_task.surrogate_model, list):
+            surrogate_model = self.explanation_task.surrogate_model[0]
+        else:
+            surrogate_model = self.explanation_task.surrogate_model
+
         ablation_task: AblationExplanationTask = AblationExplanationTask(
             config_space=self.explanation_task.config_space,
-            surrogate_model=self.explanation_task.surrogate_model
-            if not self.explanation_task.is_multi_data()
-            else self.explanation_task.surrogate_model[0],
+            surrogate_model=surrogate_model,
             baseline_config=baseline_config,
             config_of_interest=config_of_interest,
         )
@@ -201,12 +204,15 @@ class HyperSHAP:
             InteractionValues: The computed interaction values.
 
         """
+        if isinstance(self.explanation_task.surrogate_model, list):
+            surrogate_model = self.explanation_task.surrogate_model[0]
+        else:
+            surrogate_model = self.explanation_task.surrogate_model
+
         # setup explanation task
         multibaseline_ablation_task = MultiBaselineAblationExplanationTask(
             config_space=self.explanation_task.config_space,
-            surrogate_model=self.explanation_task.surrogate_model
-            if not self.explanation_task.is_multi_data()
-            else self.explanation_task.surrogate_model[0],
+            surrogate_model=surrogate_model,
             baseline_configs=baseline_configs,
             config_of_interest=config_of_interest,
         )
@@ -250,12 +256,15 @@ class HyperSHAP:
         if baseline_config is None:
             baseline_config = self.explanation_task.config_space.get_default_configuration()
 
+        if isinstance(self.explanation_task.surrogate_model, list):
+            surrogate_model = self.explanation_task.surrogate_model[0]
+        else:
+            surrogate_model = self.explanation_task.surrogate_model
+
         # setup explanation task
         tunability_task: TunabilityExplanationTask = TunabilityExplanationTask(
             config_space=self.explanation_task.config_space,
-            surrogate_model=self.explanation_task.surrogate_model
-            if not self.explanation_task.is_multi_data()
-            else self.explanation_task.surrogate_model[0],
+            surrogate_model=surrogate_model,
             baseline_config=baseline_config,
         )
 
@@ -302,12 +311,15 @@ class HyperSHAP:
         if baseline_config is None:
             baseline_config = self.explanation_task.config_space.get_default_configuration()
 
+        if isinstance(self.explanation_task.surrogate_model, list):
+            surrogate_model = self.explanation_task.surrogate_model[0]
+        else:
+            surrogate_model = self.explanation_task.surrogate_model
+
         # setup explanation task
         sensitivity_task: SensitivityExplanationTask = SensitivityExplanationTask(
             config_space=self.explanation_task.config_space,
-            surrogate_model=self.explanation_task.surrogate_model
-            if not self.explanation_task.is_multi_data()
-            else self.explanation_task.surrogate_model[0],
+            surrogate_model=surrogate_model,
             baseline_config=baseline_config,
         )
 
@@ -354,12 +366,15 @@ class HyperSHAP:
         if baseline_config is None:
             baseline_config = self.explanation_task.config_space.get_default_configuration()
 
+        if isinstance(self.explanation_task.surrogate_model, list):
+            surrogate_model = self.explanation_task.surrogate_model[0]
+        else:
+            surrogate_model = self.explanation_task.surrogate_model
+
         # setup explanation task
         mistunability_task: MistunabilityExplanationTask = MistunabilityExplanationTask(
             config_space=self.explanation_task.config_space,
-            surrogate_model=self.explanation_task.surrogate_model
-            if not self.explanation_task.is_multi_data()
-            else self.explanation_task.surrogate_model[0],
+            surrogate_model=surrogate_model,
             baseline_config=baseline_config,
         )
 
