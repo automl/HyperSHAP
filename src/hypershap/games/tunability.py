@@ -22,6 +22,8 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import numpy as np
+
     from hypershap.task import (
         BaselineExplanationTask,
         MistunabilityExplanationTask,
@@ -29,10 +31,8 @@ if TYPE_CHECKING:
         TunabilityExplanationTask,
     )
 
-import numpy as np
-
 from hypershap.games.abstract import AbstractHPIGame
-from hypershap.utils import Aggregation, ConfigSpaceSearcher, RandomConfigSpaceSearcher, evaluate_aggregation
+from hypershap.utils import Aggregation, ConfigSpaceSearcher, RandomConfigSpaceSearcher
 
 logger = logging.getLogger(__name__)
 
@@ -181,41 +181,3 @@ class MistunabilityGame(SearchBasedGame):
             cs_searcher.mode = Aggregation.MIN
 
         super().__init__(explanation_task, cs_searcher, n_workers=n_workers, verbose=verbose)
-
-
-class MultiDataSearchBasedGame(AbstractHPIGame):
-    """The multi-data search base game generalizes the search based games to multiple datasets."""
-
-    def __init__(
-        self,
-        explanation_task: BaselineExplanationTask,
-        base_game: SearchBasedGame,
-        aggregation: Aggregation,
-    ) -> None:
-        """Initialize the mistunability game.
-
-        Args:
-            explanation_task: The explanation task containing the configuration
-            space and surrogate model.
-            base_game: The base game instance.
-            aggregation: The aggregation method to use.
-
-        """
-        self.aggregation = aggregation
-        self.base_game = base_game
-
-        self.sub_games = []
-
-        super().__init__(explanation_task)
-
-    def evaluate_single_coalition(self, coalition: np.ndarray) -> float:
-        """Evaluate the multi-data game on the coalition.
-
-        Args:
-            coalition: The coalition to evaluate.
-
-        Returns: The value of the multi-data game on the coalition.
-
-        """
-        vals = np.array([game.evaluate_single_coalition(coalition) for game in self.sub_games])
-        return evaluate_aggregation(self.aggregation, vals)

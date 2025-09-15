@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from ConfigSpace import ConfigurationSpace, UniformFloatHyperparameter
+from ConfigSpace import Configuration, ConfigurationSpace, UniformFloatHyperparameter
 
 from hypershap import ExplanationTask
 from tests.fixtures.large_setup import LargeBlackboxFunction
@@ -22,9 +22,24 @@ def multi_data_config_space() -> ConfigurationSpace:
 
 
 @pytest.fixture(scope="session")
-def large_base_et(
-    large_config_space: ConfigurationSpace,
+def multi_data_blackbox_functions() -> list[LargeBlackboxFunction]:
+    """Return a list of multi-data blackbox functions for testing."""
+    return [LargeBlackboxFunction(coeff=i * 0.1) for i in range(NUM_DATA)]
+
+
+@pytest.fixture(scope="session")
+def multi_data_et(
+    multi_data_config_space: ConfigurationSpace,
+    multi_data_blackbox_functions: list[LargeBlackboxFunction],
 ) -> ExplanationTask:
     """Return a base explanation task for the simple setup."""
-    blackbox_functions = [LargeBlackboxFunction(coeff=i * 0.1).evaluate for i in range(NUM_DATA)]
-    return ExplanationTask.from_function_multidata(large_config_space, blackbox_functions)
+    return ExplanationTask.from_function_multidata(
+        config_space=multi_data_config_space,
+        functions=[fun.evaluate for fun in multi_data_blackbox_functions],
+    )
+
+
+@pytest.fixture(scope="session")
+def multi_data_baseline_config(multi_data_config_space: ConfigurationSpace) -> Configuration:
+    """Return a base configuration for the multi-data setup."""
+    return multi_data_config_space.get_default_configuration()

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from hypershap.games import MultiDataHPIGame
+
 if TYPE_CHECKING:
     from ConfigSpace import Configuration
 
@@ -82,6 +84,7 @@ class HyperSHAP:
         self,
         explanation_task: ExplanationTask,
         n_workers: int | None = None,
+        approximation_budget: int | None = None,
         verbose: bool | None = None,
     ) -> None:
         """Initialize the HyperSHAP instance with an explanation task.
@@ -91,6 +94,8 @@ class HyperSHAP:
             n_workers: The number of worker threads to use for parallel evaluation
                 of coalitions. Defaults to None meaning no parallelization.  Using more workers can significantly
                 speed up the computation of Shapley values.  The maximum number of workers is capped by the number of coalitions.
+            approximation_budget: The budget to be used for approximating Shapley values when the number of hyperparameters exceeds
+                the maximum number of hyperparameters for computing exact values. Defaults to 2**14.
             verbose:  A boolean indicating whether to print verbose messages during
                 computation. Defaults to None.  When set to True, the method prints
                 debugging information and progress updates.
@@ -99,6 +104,9 @@ class HyperSHAP:
         self.explanation_task = explanation_task
         self.last_interaction_values = None
         self.n_workers = n_workers
+        self.approximation_budget = (
+            approximation_budget if approximation_budget is not None else 2**EXACT_MAX_HYPERPARAMETERS
+        )
         self.verbose = verbose
 
     def __get_interaction_values(self, game: AbstractHPIGame, index: str = "FSII", order: int = 2) -> InteractionValues:
@@ -113,7 +121,7 @@ class HyperSHAP:
             approx = SHAPIQ(n=game.n_players, max_order=2, index=index)
 
             # approximate interaction values with the given index and order
-            interaction_values = approx(budget=2**EXACT_MAX_HYPERPARAMETERS, game=game)
+            interaction_values = approx(budget=self.approximation_budget, game=game)
 
         # cache current interaction values for plotting shortcuts
         self.last_interaction_values = interaction_values
@@ -142,7 +150,9 @@ class HyperSHAP:
         # setup explanation task
         ablation_task: AblationExplanationTask = AblationExplanationTask(
             config_space=self.explanation_task.config_space,
-            surrogate_model=self.explanation_task.surrogate_model,
+            surrogate_model=self.explanation_task.surrogate_model
+            if not self.explanation_task.is_multi_data()
+            else self.explanation_task.surrogate_model[0],
             baseline_config=baseline_config,
             config_of_interest=config_of_interest,
         )
@@ -153,6 +163,14 @@ class HyperSHAP:
             n_workers=self.n_workers,
             verbose=self.verbose,
         )
+
+        if self.explanation_task.is_multi_data():
+            ag = MultiDataHPIGame(
+                explanation_task=self.explanation_task,
+                base_game=ag,
+                aggregation=Aggregation.AVG,
+            )
+
         return self.__get_interaction_values(game=ag, index=index, order=order)
 
     def ablation_multibaseline(
@@ -179,7 +197,9 @@ class HyperSHAP:
         # setup explanation task
         multibaseline_ablation_task = MultiBaselineAblationExplanationTask(
             config_space=self.explanation_task.config_space,
-            surrogate_model=self.explanation_task.surrogate_model,
+            surrogate_model=self.explanation_task.surrogate_model
+            if not self.explanation_task.is_multi_data()
+            else self.explanation_task.surrogate_model[0],
             baseline_configs=baseline_configs,
             config_of_interest=config_of_interest,
         )
@@ -191,6 +211,14 @@ class HyperSHAP:
             n_workers=self.n_workers,
             verbose=self.verbose,
         )
+
+        if self.explanation_task.is_multi_data():
+            ag = MultiDataHPIGame(
+                explanation_task=self.explanation_task,
+                base_game=ag,
+                aggregation=Aggregation.AVG,
+            )
+
         return self.__get_interaction_values(game=ag, index=index, order=order)
 
     def tunability(
@@ -218,7 +246,9 @@ class HyperSHAP:
         # setup explanation task
         tunability_task: TunabilityExplanationTask = TunabilityExplanationTask(
             config_space=self.explanation_task.config_space,
-            surrogate_model=self.explanation_task.surrogate_model,
+            surrogate_model=self.explanation_task.surrogate_model
+            if not self.explanation_task.is_multi_data()
+            else self.explanation_task.surrogate_model[0],
             baseline_config=baseline_config,
         )
 
@@ -233,6 +263,14 @@ class HyperSHAP:
             n_workers=self.n_workers,
             verbose=self.verbose,
         )
+
+        if self.explanation_task.is_multi_data():
+            tg = MultiDataHPIGame(
+                explanation_task=self.explanation_task,
+                base_game=tg,
+                aggregation=Aggregation.AVG,
+            )
+
         return self.__get_interaction_values(game=tg, index=index, order=order)
 
     def sensitivity(
@@ -260,7 +298,9 @@ class HyperSHAP:
         # setup explanation task
         sensitivity_task: SensitivityExplanationTask = SensitivityExplanationTask(
             config_space=self.explanation_task.config_space,
-            surrogate_model=self.explanation_task.surrogate_model,
+            surrogate_model=self.explanation_task.surrogate_model
+            if not self.explanation_task.is_multi_data()
+            else self.explanation_task.surrogate_model[0],
             baseline_config=baseline_config,
         )
 
@@ -275,6 +315,14 @@ class HyperSHAP:
             n_workers=self.n_workers,
             verbose=self.verbose,
         )
+
+        if self.explanation_task.is_multi_data():
+            tg = MultiDataHPIGame(
+                explanation_task=self.explanation_task,
+                base_game=tg,
+                aggregation=Aggregation.AVG,
+            )
+
         return self.__get_interaction_values(game=tg, index=index, order=order)
 
     def mistunability(
@@ -302,7 +350,9 @@ class HyperSHAP:
         # setup explanation task
         mistunability_task: MistunabilityExplanationTask = MistunabilityExplanationTask(
             config_space=self.explanation_task.config_space,
-            surrogate_model=self.explanation_task.surrogate_model,
+            surrogate_model=self.explanation_task.surrogate_model
+            if not self.explanation_task.is_multi_data()
+            else self.explanation_task.surrogate_model[0],
             baseline_config=baseline_config,
         )
 
@@ -317,6 +367,13 @@ class HyperSHAP:
             n_workers=self.n_workers,
             verbose=self.verbose,
         )
+
+        if self.explanation_task.is_multi_data():
+            tg = MultiDataHPIGame(
+                explanation_task=self.explanation_task,
+                base_game=tg,
+                aggregation=Aggregation.AVG,
+            )
         return self.__get_interaction_values(game=tg, index=index, order=order)
 
     def optimizer_bias(

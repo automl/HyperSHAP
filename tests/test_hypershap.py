@@ -149,8 +149,6 @@ def test_optimizerbias(hypershap_inst: HyperSHAP, simple_base_et: ExplanationTas
 def test_plot_si_plot(hypershap_inst: HyperSHAP, tunability_iv: InteractionValues) -> None:
     """Test to plot a Shapley Interaction graph."""
     filename = "test-sigraph.png"
-    if Path(filename).is_file():
-        Path(filename).unlink()
     hypershap_inst.plot_si_graph(tunability_iv, save_path=filename, no_show=True)
     assert Path(filename).is_file(), "no output file was created"
     # tidy up
@@ -160,8 +158,6 @@ def test_plot_si_plot(hypershap_inst: HyperSHAP, tunability_iv: InteractionValue
 def test_plot_force_plot(hypershap_inst: HyperSHAP, tunability_iv: InteractionValues) -> None:
     """Test to plot a force plot."""
     filename = "test-force.png"
-    if Path(filename).is_file():
-        Path(filename).unlink()
     hypershap_inst.plot_force(tunability_iv, save_path=filename, no_show=True)
     assert Path(filename).is_file(), "no output file was created"
     # tidy up
@@ -171,8 +167,6 @@ def test_plot_force_plot(hypershap_inst: HyperSHAP, tunability_iv: InteractionVa
 def test_plot_upset_plot(hypershap_inst: HyperSHAP, tunability_iv: InteractionValues) -> None:
     """Test to plot an upset plot."""
     filename = "test-upset.png"
-    if Path(filename).is_file():
-        Path(filename).unlink()
     hypershap_inst.plot_upset(tunability_iv, save_path=filename, no_show=True)
     assert Path(filename).is_file(), "no output file was created"
     # tidy up
@@ -182,8 +176,6 @@ def test_plot_upset_plot(hypershap_inst: HyperSHAP, tunability_iv: InteractionVa
 def test_plot_waterfall_plot(hypershap_inst: HyperSHAP, tunability_iv: InteractionValues) -> None:
     """Test to plot an upset plot."""
     filename = "test-waterfall.png"
-    if Path(filename).is_file():
-        Path(filename).unlink()
     hypershap_inst.plot_waterfall(tunability_iv, save_path=filename, no_show=True)
     assert Path(filename).is_file(), "no output file was created"
     # tidy up
@@ -193,8 +185,6 @@ def test_plot_waterfall_plot(hypershap_inst: HyperSHAP, tunability_iv: Interacti
 def test_plot_stacked_barchart(hypershap_inst: HyperSHAP, tunability_iv: InteractionValues) -> None:
     """Test to plot an upset plot."""
     filename = "test-stacked-bar.png"
-    if Path(filename).is_file():
-        Path(filename).unlink()
     hypershap_inst.plot_stacked_bar(tunability_iv, save_path=filename, no_show=True)
     assert Path(filename).is_file(), "no output file was created"
     # tidy up

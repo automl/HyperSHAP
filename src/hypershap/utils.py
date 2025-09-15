@@ -122,8 +122,5 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
         temp_random_sample[:, column_index] = self.explanation_task.baseline_config.get_array()[column_index]
 
         # predict performance values with the help of the surrogate model
-        if isinstance(self.explanation_task.surrogate_model, list):
-            raise TypeError
-
-        vals: np.ndarray = np.array(self.explanation_task.surrogate_model.evaluate(temp_random_sample))
+        vals: np.ndarray = np.array(self.explanation_task.get_single_surrogate_model().evaluate(temp_random_sample))
         return evaluate_aggregation(self.mode, vals)
