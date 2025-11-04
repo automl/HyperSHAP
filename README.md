@@ -8,8 +8,8 @@
 
 HyperSHAP – a game‑theoretic Python library for explaining Hyperparameter Optimization (HPO). It uses Shapley values and interaction indices to provide both local and global insights into how individual hyper‑parameters (and their interactions) affect a model’s performance.
 
-- **Github repository**: <https://github.com/automl/hypershap/>
-- **Documentation** <https://automl.github.io/hypershap/>
+- **Github repository**: <https://github.com/automl/HyperSHAP/>
+- **Documentation** <https://automl.github.io/HyperSHAP/>
 
 
 ## Table of Contents
