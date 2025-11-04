@@ -12,6 +12,7 @@ from hypershap import ExplanationTask
 def simple_config_space() -> ConfigurationSpace:
     """Return a simple config space for testing."""
     config_space = ConfigurationSpace()
+    config_space.seed(42)
     config_space.add(UniformFloatHyperparameter("a", 0, 1, 0))
     config_space.add(UniformFloatHyperparameter("b", 0, 1, 0))
     return config_space
