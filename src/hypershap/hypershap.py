@@ -20,7 +20,7 @@ import logging
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-from shapiq import SHAPIQ, ExactComputer, InteractionValues
+from shapiq import SHAPIQ, ExactComputer, InteractionValues, KernelSHAPIQ
 
 from hypershap.games import (
     AblationGame,
@@ -125,7 +125,10 @@ class HyperSHAP:
             interaction_values = ec(index=index, order=order)
         else:
             # instantiate kernel
-            approx = SHAPIQ(n=game.n_players, max_order=2, index=index)
+            if index == "FSII":
+                approx = SHAPIQ(n=game.n_players, max_order=2, index=index)
+            else:
+                approx = KernelSHAPIQ(n=game.n_players, max_order=2, index=index)
 
             # approximate interaction values with the given index and order
             interaction_values = approx(budget=self.approximation_budget, game=game)
