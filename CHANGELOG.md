@@ -1,3 +1,7 @@
+# v0.0.4
+- Added pseudorandomization
+- Added index-specific approximation
+
 # v0.0.3
 - Added multi-baseline ablation game. This game computes ablation paths with respect to multiple baseline configurations and aggregates values for different paths via mean, min, max or variance.
 - Added waterfall plots to the HyperSHAP interface.
