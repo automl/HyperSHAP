@@ -243,6 +243,7 @@ class HyperSHAP:
         index: str = "FSII",
         order: int = 2,
         n_samples: int = 10_000,
+        seed: int | None = 0,
     ) -> InteractionValues:
         """Compute and return the interaction values for tunability analysis.
 
@@ -251,6 +252,7 @@ class HyperSHAP:
             index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
             order (int, optional): The order of the interaction values. Defaults to 2.
             n_samples (int, optional): The number of samples to use for simulating HPO. Defaults to 10_000.
+            seed (int, optiona): The random seed for simulating HPO. Defaults to 0.
 
         Returns:
             InteractionValues: The computed interaction values.
@@ -278,6 +280,7 @@ class HyperSHAP:
                 explanation_task=tunability_task,
                 n_samples=n_samples,
                 mode=Aggregation.MAX,
+                seed=seed,
             ),
             n_workers=self.n_workers,
             verbose=self.verbose,
@@ -298,6 +301,7 @@ class HyperSHAP:
         index: str = "FSII",
         order: int = 2,
         n_samples: int = 10_000,
+        seed: int | None = 0,
     ) -> InteractionValues:
         """Compute and return the interaction values for sensitivity analysis.
 
@@ -306,6 +310,7 @@ class HyperSHAP:
             index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
             order (int, optional): The order of the interaction values. Defaults to 2.
             n_samples (int, optional): The number of samples to use for simulating HPO. Defaults to 10_000.
+            seed (int, optiona): The random seed for simulating HPO. Defaults to 0.
 
         Returns:
             InteractionValues: The computed interaction values.
@@ -333,6 +338,7 @@ class HyperSHAP:
                 explanation_task=sensitivity_task,
                 n_samples=n_samples,
                 mode=Aggregation.VAR,
+                seed=seed,
             ),
             n_workers=self.n_workers,
             verbose=self.verbose,
@@ -353,6 +359,7 @@ class HyperSHAP:
         index: str = "FSII",
         order: int = 2,
         n_samples: int = 10_000,
+        seed: int | None = 0,
     ) -> InteractionValues:
         """Compute and return the interaction values for mistunability analysis.
 
@@ -361,6 +368,7 @@ class HyperSHAP:
             index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
             order (int, optional): The order of the interaction values. Defaults to 2.
             n_samples (int, optional): The number of samples to use for simulating HPO. Defaults to 10_000.
+            seed (int, optiona): The random seed for simulating HPO. Defaults to 0.
 
         Returns:
             InteractionValues: The computed interaction values.
@@ -388,6 +396,7 @@ class HyperSHAP:
                 explanation_task=mistunability_task,
                 n_samples=n_samples,
                 mode=Aggregation.MIN,
+                seed=seed,
             ),
             n_workers=self.n_workers,
             verbose=self.verbose,
