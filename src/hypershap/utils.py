@@ -98,7 +98,8 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
         """
         super().__init__(explanation_task, mode=mode)
         cs = deepcopy(explanation_task.config_space)
-        cs.seed(seed)
+        if seed is not None:
+            cs.seed(seed)
         sampled_configurations = cs.sample_configuration(size=n_samples)
         self.random_sample = np.array([config.get_array() for config in sampled_configurations])
 
