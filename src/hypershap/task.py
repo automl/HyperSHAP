@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
     from hypershap import ConfigSpaceSearcher
 
+from copy import deepcopy
+
 from sklearn.ensemble import RandomForestRegressor
 
 from hypershap.surrogate_model import DataBasedSurrogateModel, ModelBasedSurrogateModel, SurrogateModel
@@ -132,6 +134,7 @@ class ExplanationTask:
         function: Callable[[Configuration], float],
         n_samples: int = 1_000,
         base_model: BaseEstimator | None = None,
+        seed: int | None = 0,
     ) -> ExplanationTask:
         """Create an ExplanationTask from a function that evaluates configurations.
 
@@ -140,17 +143,21 @@ class ExplanationTask:
             function: A callable that takes a configuration and returns its performance.
             n_samples: The number of configurations to sample for training the surrogate model. Defaults to 1000.
             base_model: The base model to use for training the surrogate model. Defaults to RandomForestRegressor.
+            seed: The seed for the random number generator, it is used to seed a deep copy of the config space.
 
         Returns:
             An ExplanationTask instance.
 
         """
-        samples: list[Configuration] = config_space.sample_configuration(n_samples)
+        cs = deepcopy(config_space)
+        if seed is not None:
+            cs.seed(seed)
+        samples: list[Configuration] = cs.sample_configuration(n_samples)
         values: list[float] = [function(config) for config in samples]
         data: list[tuple[Configuration, float]] = list(zip(samples, values, strict=False))
-        base_model = base_model if base_model is not None else RandomForestRegressor()
+        base_model = base_model if base_model is not None else RandomForestRegressor(random_state=seed)
 
-        return ExplanationTask.from_data(config_space=config_space, data=data, base_model=base_model)
+        return ExplanationTask.from_data(config_space=cs, data=data, base_model=base_model)
 
     @staticmethod
     def from_function_multidata(

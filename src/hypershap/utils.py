@@ -6,6 +6,7 @@ This module defines specific error classes for simpler debugging and interfaces 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from enum import Enum
 from typing import TYPE_CHECKING
 
@@ -83,6 +84,7 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
         explanation_task: BaselineExplanationTask,
         mode: Aggregation = Aggregation.MAX,
         n_samples: int = 10_000,
+        seed: int | None = 0,
     ) -> None:
         """Initialize the random configuration space searcher.
 
@@ -91,11 +93,13 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
                 space and surrogate model.
             mode: The aggregation mode for performance values.
             n_samples: The number of configurations to sample.
+            seed: The random seed for sampling configurations from the config space.
 
         """
         super().__init__(explanation_task, mode=mode)
-
-        sampled_configurations = self.explanation_task.config_space.sample_configuration(size=n_samples)
+        cs = deepcopy(explanation_task.config_space)
+        cs.seed(seed)
+        sampled_configurations = cs.sample_configuration(size=n_samples)
         self.random_sample = np.array([config.get_array() for config in sampled_configurations])
 
         # cache coalition values to ensure monotonicity for min/max
