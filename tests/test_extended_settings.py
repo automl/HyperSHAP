@@ -26,6 +26,14 @@ def test_large_ablation(large_base_et: ExplanationTask) -> None:
     hypershap.ablation(comparison, baseline)
 
 
+def test_large_ablation_kernelshap(large_base_et: ExplanationTask) -> None:
+    """Test HyperSHAP with large config space."""
+    baseline = large_base_et.config_space.sample_configuration()
+    comparison = large_base_et.config_space.sample_configuration()
+    hypershap = HyperSHAP(explanation_task=large_base_et, approximation_budget=2**7)
+    hypershap.ablation(comparison, baseline, index="k-SII")
+
+
 def test_multi_data_ablation(
     multi_data_baseline_config: Configuration,
     multi_data_config_space: ConfigurationSpace,
