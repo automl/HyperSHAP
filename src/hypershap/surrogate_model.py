@@ -182,6 +182,7 @@ class DataBasedSurrogateModel(ModelBasedSurrogateModel):
         config_space: ConfigurationSpace,
         data: list[tuple[Configuration, float]],
         base_model: BaseEstimator | None = None,
+        seed: int | None = 0,
     ) -> None:
         """Initialize the DataBasedSurrogateModel with data and an optional base model.
 
@@ -191,13 +192,14 @@ class DataBasedSurrogateModel(ModelBasedSurrogateModel):
                   is a tuple of (Configuration, float).
             base_model: The base model to be used for fitting the surrogate model.
                         If None, a RandomForestRegressor is used.
+            seed: The random seed for pseudo-randomization of the surrogate model. Defaults to 0.
 
         """
         train_x = np.array([obs[0].get_array() for obs in data])
         train_y = np.array([obs[1] for obs in data])
 
         if base_model is None:
-            base_model = RandomForestRegressor()
+            base_model = RandomForestRegressor(random_state=seed)
 
         pipeline = cast("SklearnRegressorProtocol", base_model)
         pipeline.fit(train_x, train_y)
