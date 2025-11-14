@@ -17,11 +17,11 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "shapiq>=1.2.3",
+    "shapiq==1.4.1",
     "numpy>=2.2.6",
     "scikit-learn>=1.7.1",
     "matplotlib>=3.10.5",
-    "networkx>=3.4.2"
+    "networkx>=3.4.2",
 ]
 
 [project.urls]

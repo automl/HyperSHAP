@@ -20,7 +20,8 @@ import logging
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-from shapiq import SHAPIQ, ExactComputer, InteractionValues, KernelSHAPIQ
+from shapiq import ExactComputer, InteractionValues
+from shapiq.explainer.configuration import setup_approximator_automatically
 
 from hypershap.games import (
     AblationGame,
@@ -116,7 +117,13 @@ class HyperSHAP:
         )
         self.verbose = verbose
 
-    def __get_interaction_values(self, game: AbstractHPIGame, index: str = "FSII", order: int = 2) -> InteractionValues:
+    def __get_interaction_values(
+        self,
+        game: AbstractHPIGame,
+        index: str = "FSII",
+        order: int = 2,
+        seed: int | None = 0,
+    ) -> InteractionValues:
         if game.n_players <= EXACT_MAX_HYPERPARAMETERS:
             # instantiate exact computer if number of hyperparameters is small enough
             ec = ExactComputer(n_players=game.get_num_hyperparameters(), game=game)  # pyright: ignore
@@ -124,11 +131,8 @@ class HyperSHAP:
             # compute interaction values with the given index and order
             interaction_values = ec(index=index, order=order)
         else:
-            # instantiate kernel
-            if index == "FSII":
-                approx = SHAPIQ(n=game.n_players, max_order=2, index=index)
-            else:
-                approx = KernelSHAPIQ(n=game.n_players, max_order=2, index=index)
+            # instantiate approximator
+            approx = setup_approximator_automatically(index, order, game.n_players, seed)
 
             # approximate interaction values with the given index and order
             interaction_values = approx(budget=self.approximation_budget, game=game)
