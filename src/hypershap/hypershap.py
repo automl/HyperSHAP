@@ -12,6 +12,7 @@ from hypershap.games import MultiDataHPIGame
 
 if TYPE_CHECKING:
     from ConfigSpace import Configuration
+    from shapiq import ValidApproximationIndices
 
     from hypershap.utils import ConfigSpaceSearcher
 
@@ -20,7 +21,8 @@ import logging
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-from shapiq import SHAPIQ, ExactComputer, InteractionValues, KernelSHAPIQ
+from shapiq import ExactComputer, InteractionValues
+from shapiq.explainer.configuration import setup_approximator_automatically
 
 from hypershap.games import (
     AblationGame,
@@ -66,13 +68,13 @@ class HyperSHAP:
         __init__(explanation_task: ExplanationTask):
             Initializes the HyperSHAP instance with an explanation task.
 
-        ablation(config_of_interest: Configuration, baseline_config: Configuration, index: str = "FSII", order: int = 2) -> InteractionValues:
+        ablation(config_of_interest: Configuration, baseline_config: Configuration, index: ValidApproximationIndices = "FSII", order: int = 2) -> InteractionValues:
             Computes and returns the interaction values for ablation analysis.
 
-        tunability(baseline_config: Configuration | None, index: str = "FSII", order: int = 2) -> InteractionValues:
+        tunability(baseline_config: Configuration | None, index: ValidApproximationIndices = "FSII", order: int = 2) -> InteractionValues:
             Computes and returns the interaction values for tunability analysis.
 
-        optimizer_bias(optimizer_of_interest: ConfigSpaceSearcher, optimizer_ensemble: list[ConfigSpaceSearcher], index: str = "FSII", order: int = 2) -> InteractionValues:
+        optimizer_bias(optimizer_of_interest: ConfigSpaceSearcher, optimizer_ensemble: list[ConfigSpaceSearcher], index: ValidApproximationIndices = "FSII", order: int = 2) -> InteractionValues:
             Computes and returns the interaction values for optimizer bias analysis.
 
         plot_si_graph(interaction_values: InteractionValues | None = None, save_path: str | None = None):
@@ -116,7 +118,13 @@ class HyperSHAP:
         )
         self.verbose = verbose
 
-    def __get_interaction_values(self, game: AbstractHPIGame, index: str = "FSII", order: int = 2) -> InteractionValues:
+    def __get_interaction_values(
+        self,
+        game: AbstractHPIGame,
+        index: ValidApproximationIndices = "FSII",
+        order: int = 2,
+        seed: int | None = 0,
+    ) -> InteractionValues:
         if game.n_players <= EXACT_MAX_HYPERPARAMETERS:
             # instantiate exact computer if number of hyperparameters is small enough
             ec = ExactComputer(n_players=game.get_num_hyperparameters(), game=game)  # pyright: ignore
@@ -124,11 +132,8 @@ class HyperSHAP:
             # compute interaction values with the given index and order
             interaction_values = ec(index=index, order=order)
         else:
-            # instantiate kernel
-            if index == "FSII":
-                approx = SHAPIQ(n=game.n_players, max_order=2, index=index)
-            else:
-                approx = KernelSHAPIQ(n=game.n_players, max_order=2, index=index)
+            # instantiate approximator
+            approx = setup_approximator_automatically(index, order, game.n_players, seed)
 
             # approximate interaction values with the given index and order
             interaction_values = approx(budget=self.approximation_budget, game=game)
@@ -142,7 +147,7 @@ class HyperSHAP:
         self,
         config_of_interest: Configuration,
         baseline_config: Configuration,
-        index: str = "FSII",
+        index: ValidApproximationIndices = "FSII",
         order: int = 2,
     ) -> InteractionValues:
         """Compute and return the interaction values for ablation analysis.
@@ -150,7 +155,7 @@ class HyperSHAP:
         Args:
             config_of_interest (Configuration): The configuration of interest.
             baseline_config (Configuration): The baseline configuration.
-            index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
+            index (ValidApproximationIndices, optional): The index to use for computing interaction values. Defaults to "FSII".
             order (int, optional): The order of the interaction values. Defaults to 2.
 
         Returns:
@@ -191,7 +196,7 @@ class HyperSHAP:
         config_of_interest: Configuration,
         baseline_configs: list[Configuration],
         aggregation: Aggregation = Aggregation.AVG,
-        index: str = "FSII",
+        index: ValidApproximationIndices = "FSII",
         order: int = 2,
     ) -> InteractionValues:
         """Compute and return the interaction values for multi-baseline ablation analysis.
@@ -200,7 +205,7 @@ class HyperSHAP:
             config_of_interest (Configuration): The configuration of interest.
             baseline_configs (list[Configuration]): The list of baseline configurations.
             aggregation (Aggregation): The aggregation method to use for computing interaction values.
-            index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
+            index (ValidApproximationIndices, optional): The index to use for computing interaction values. Defaults to "FSII".
             order (int, optional): The order of the interaction values. Defaults to 2.
 
         Returns:
@@ -240,9 +245,10 @@ class HyperSHAP:
     def tunability(
         self,
         baseline_config: Configuration | None = None,
-        index: str = "FSII",
+        index: ValidApproximationIndices = "FSII",
         order: int = 2,
         n_samples: int = 10_000,
+        seed: int | None = 0,
     ) -> InteractionValues:
         """Compute and return the interaction values for tunability analysis.
 
@@ -251,6 +257,7 @@ class HyperSHAP:
             index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
             order (int, optional): The order of the interaction values. Defaults to 2.
             n_samples (int, optional): The number of samples to use for simulating HPO. Defaults to 10_000.
+            seed (int, optiona): The random seed for simulating HPO. Defaults to 0.
 
         Returns:
             InteractionValues: The computed interaction values.
@@ -278,6 +285,7 @@ class HyperSHAP:
                 explanation_task=tunability_task,
                 n_samples=n_samples,
                 mode=Aggregation.MAX,
+                seed=seed,
             ),
             n_workers=self.n_workers,
             verbose=self.verbose,
@@ -295,9 +303,10 @@ class HyperSHAP:
     def sensitivity(
         self,
         baseline_config: Configuration | None = None,
-        index: str = "FSII",
+        index: ValidApproximationIndices = "FSII",
         order: int = 2,
         n_samples: int = 10_000,
+        seed: int | None = 0,
     ) -> InteractionValues:
         """Compute and return the interaction values for sensitivity analysis.
 
@@ -306,6 +315,7 @@ class HyperSHAP:
             index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
             order (int, optional): The order of the interaction values. Defaults to 2.
             n_samples (int, optional): The number of samples to use for simulating HPO. Defaults to 10_000.
+            seed (int, optiona): The random seed for simulating HPO. Defaults to 0.
 
         Returns:
             InteractionValues: The computed interaction values.
@@ -333,6 +343,7 @@ class HyperSHAP:
                 explanation_task=sensitivity_task,
                 n_samples=n_samples,
                 mode=Aggregation.VAR,
+                seed=seed,
             ),
             n_workers=self.n_workers,
             verbose=self.verbose,
@@ -350,17 +361,19 @@ class HyperSHAP:
     def mistunability(
         self,
         baseline_config: Configuration | None = None,
-        index: str = "FSII",
+        index: ValidApproximationIndices = "FSII",
         order: int = 2,
         n_samples: int = 10_000,
+        seed: int | None = 0,
     ) -> InteractionValues:
         """Compute and return the interaction values for mistunability analysis.
 
         Args:
             baseline_config (Configuration | None, optional): The baseline configuration. Defaults to None.
-            index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
+            index (ValidApproximationIndices, optional): The index to use for computing interaction values. Defaults to "FSII".
             order (int, optional): The order of the interaction values. Defaults to 2.
             n_samples (int, optional): The number of samples to use for simulating HPO. Defaults to 10_000.
+            seed (int, optiona): The random seed for simulating HPO. Defaults to 0.
 
         Returns:
             InteractionValues: The computed interaction values.
@@ -388,6 +401,7 @@ class HyperSHAP:
                 explanation_task=mistunability_task,
                 n_samples=n_samples,
                 mode=Aggregation.MIN,
+                seed=seed,
             ),
             n_workers=self.n_workers,
             verbose=self.verbose,
@@ -405,7 +419,7 @@ class HyperSHAP:
         self,
         optimizer_of_interest: ConfigSpaceSearcher,
         optimizer_ensemble: list[ConfigSpaceSearcher],
-        index: str = "FSII",
+        index: ValidApproximationIndices = "FSII",
         order: int = 2,
     ) -> InteractionValues:
         """Compute and return the interaction values for optimizer bias analysis.
@@ -413,7 +427,7 @@ class HyperSHAP:
         Args:
             optimizer_of_interest (ConfigSpaceSearcher): The optimizer of interest.
             optimizer_ensemble (list[ConfigSpaceSearcher]): The ensemble of optimizers.
-            index (str, optional): The index to use for computing interaction values. Defaults to "FSII".
+            index (ValidApproximationIndices, optional): The index to use for computing interaction values. Defaults to "FSII".
             order (int, optional): The order of the interaction values. Defaults to 2.
 
         Returns:

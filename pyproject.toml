@@ -1,6 +1,6 @@
 [project]
 name = "hypershap"
-version = "0.0.4"
+version = "0.0.5"
 description = "HyperSHAP is a post-hoc explanation method for hyperparameter optimization."
 authors = [{ name = "Marcel Wever", email = "m.wever@ai.uni-hannover.de" }]
 readme = "README.md"
@@ -17,11 +17,12 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "shapiq>=1.2.3",
+    "shapiq==1.4.1",
     "numpy>=2.2.6",
     "scikit-learn>=1.7.1",
     "matplotlib>=3.10.5",
-    "networkx>=3.4.2"
+    "networkx>=3.4.2",
+    "ConfigSpace>=1.2.1",
 ]
 
 [project.urls]
@@ -50,8 +51,6 @@ docs = [
 ]
 
 dev = [
-    "shapiq>=1.2.0",
-    "ConfigSpace>=1.2.1",
     "numpy>=1.26.4",
     "tox-uv>=1.11.3",
     "deptry>=0.23.0",

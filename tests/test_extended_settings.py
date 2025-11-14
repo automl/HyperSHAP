@@ -72,3 +72,10 @@ def test_multi_data_sensitivity(multi_data_baseline_config: Configuration, hyper
     """Test the multi-data sesntivity task."""
     iv = hypershap_inst.sensitivity(baseline_config=multi_data_baseline_config)
     assert iv is not None, "Interaction values should not be none."
+
+
+def test_tunability_with_conditions(simple_cond_base_et: ExplanationTask) -> None:
+    """Test the tunability task with a configuration space that has conditions."""
+    hypershap = HyperSHAP(simple_cond_base_et)
+    iv = hypershap.tunability(simple_cond_base_et.config_space.get_default_configuration())
+    assert iv is not None, "Interaction values should not be none."
