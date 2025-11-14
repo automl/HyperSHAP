@@ -1319,6 +1319,7 @@ name = "hypershap"
 version = "0.0.4"
 source = { editable = "." }
 dependencies = [
+    { name = "configspace" },
     { name = "matplotlib" },
     { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "networkx", version = "3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -1333,7 +1334,6 @@ carps = [
     { name = "carps" },
 ]
 dev = [
-    { name = "configspace" },
     { name = "deptry" },
     { name = "mkdocs" },
     { name = "mkdocs-material" },
@@ -1347,7 +1347,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
     { name = "ruff" },
-    { name = "shapiq" },
     { name = "tox-uv" },
 ]
 docs = [
@@ -1369,6 +1368,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
+    { name = "configspace", specifier = ">=1.2.1" },
     { name = "matplotlib", specifier = ">=3.10.5" },
     { name = "networkx", specifier = ">=3.4.2" },
     { name = "numpy", specifier = ">=2.2.6" },
@@ -1379,7 +1379,6 @@ requires-dist = [
 [package.metadata.requires-dev]
 carps = [{ name = "carps", specifier = ">=1.0.4" }]
 dev = [
-    { name = "configspace", specifier = ">=1.2.1" },
     { name = "deptry", specifier = ">=0.23.0" },
     { name = "mkdocs", specifier = ">=1.4.2" },
     { name = "mkdocs-material", specifier = ">=8.5.10" },
@@ -1392,7 +1391,6 @@ dev = [
     { name = "pytest-cov", specifier = ">=6.0.0" },
     { name = "pytest-xdist", specifier = ">=3.6.1" },
     { name = "ruff", specifier = ">=0.11.5" },
-    { name = "shapiq", specifier = ">=1.2.0" },
     { name = "tox-uv", specifier = ">=1.11.3" },
 ]
 docs = [
