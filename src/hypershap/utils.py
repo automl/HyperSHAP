@@ -5,6 +5,7 @@ This module defines specific error classes for simpler debugging and interfaces 
 
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from enum import Enum
@@ -12,8 +13,15 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hypershap.task import BaselineExplanationTask
-
 import numpy as np
+from ConfigSpace.exceptions import (
+    ActiveHyperparameterNotSetError,
+    ForbiddenValueError,
+    IllegalVectorizedValueError,
+    InactiveHyperparameterSetError,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class Aggregation(Enum):
@@ -106,6 +114,20 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
         # cache coalition values to ensure monotonicity for min/max
         self.coalition_cache = {}
 
+    def _is_valid(self, config: np.ndarray) -> bool:
+        """Check whether a configuration is valid with respect to conditions of the configuration space."""
+        try:
+            self.explanation_task.config_space.check_configuration_vector_representation(config)
+        except (
+            ActiveHyperparameterNotSetError,
+            IllegalVectorizedValueError,
+            InactiveHyperparameterSetError,
+            ForbiddenValueError,
+        ):
+            return False
+        else:
+            return True
+
     def search(self, coalition: np.ndarray) -> float:
         """Search the configuration space based on the coalition.
 
@@ -125,6 +147,22 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
         column_index = np.where(blind_coalition)
         temp_random_sample[:, column_index] = self.explanation_task.baseline_config.get_array()[column_index]
 
-        # predict performance values with the help of the surrogate model
-        vals: np.ndarray = np.array(self.explanation_task.get_single_surrogate_model().evaluate(temp_random_sample))
+        # in case of conditions in the config space, it might happen that through blinding hyperparameter values
+        # configurations might become invalid and those should not be considered for calculating vals
+        if len(self.explanation_task.config_space.conditions) > 0:
+            # filter invalid configurations
+            validity = np.apply_along_axis(self._is_valid, axis=1, arr=temp_random_sample)
+            filtered_samples = temp_random_sample[validity]
+
+            if len(filtered_samples) < 0.05 * len(temp_random_sample):  # pragma: no cover
+                logger.warning(
+                    "WARNING: Due to blinding less than 5% of the samples in the random search remain valid. "
+                    "Consider increasing the sampling budget of the random search.",
+                )
+
+            # predict performance values with the help of the surrogate model for the filtered configurations
+            vals: np.ndarray = np.array(self.explanation_task.get_single_surrogate_model().evaluate(filtered_samples))
+        else:
+            vals: np.ndarray = np.array(self.explanation_task.get_single_surrogate_model().evaluate(temp_random_sample))
+
         return evaluate_aggregation(self.mode, vals)
