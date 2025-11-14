@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from ConfigSpace import Configuration, ConfigurationSpace, UniformFloatHyperparameter
+from ConfigSpace import Configuration, ConfigurationSpace, LessThanCondition, UniformFloatHyperparameter
 
 from hypershap import ExplanationTask
 
@@ -41,7 +41,7 @@ class SimpleBlackboxFunction:
         Returns: The value of the configuration.
 
         """
-        return self.value(x["a"], x["b"])
+        return self.value(x["a"], x.get("b", 0))
 
     def value(self, a: float, b: float) -> float:
         """Evaluate the value of a configuration.
@@ -71,3 +71,27 @@ def simple_base_et(
 ) -> ExplanationTask:
     """Return a base explanation task for the simple setup."""
     return ExplanationTask.from_function(simple_config_space, simple_blackbox_function.evaluate)
+
+
+@pytest.fixture(scope="session")
+def simple_cond_config_space() -> ConfigurationSpace:
+    """Return a simple config space with conditions for testing."""
+    config_space = ConfigurationSpace()
+    config_space.seed(42)
+
+    a = UniformFloatHyperparameter("a", 0, 1, 0)
+    b = UniformFloatHyperparameter("b", 0, 1, 0)
+    config_space.add(a)
+    config_space.add(b)
+
+    config_space.add(LessThanCondition(b, a, 0.3))
+    return config_space
+
+
+@pytest.fixture(scope="session")
+def simple_cond_base_et(
+    simple_cond_config_space: ConfigurationSpace,
+    simple_blackbox_function: SimpleBlackboxFunction,
+) -> ExplanationTask:
+    """Return a base explanation task for the simple setup with conditions."""
+    return ExplanationTask.from_function(simple_cond_config_space, simple_blackbox_function.evaluate)
