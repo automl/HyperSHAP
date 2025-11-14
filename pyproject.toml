@@ -1,6 +1,6 @@
 [project]
 name = "hypershap"
-version = "0.0.4"
+version = "0.0.5"
 description = "HyperSHAP is a post-hoc explanation method for hyperparameter optimization."
 authors = [{ name = "Marcel Wever", email = "m.wever@ai.uni-hannover.de" }]
 readme = "README.md"

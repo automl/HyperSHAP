@@ -35,7 +35,21 @@ HyperSHAP – a game‑theoretic Python library for explaining Hyperparameter Op
 
 ## Installation
 
+First, create a virtual environment, e.g., via `conda`:
 ```sh
+$ conda create -n hypershap python=3.10
+$ conda activate hypershap
+```
+
+Now, you can just pip install HyperSHAP as follows:
+```sh
+$ pip install hypershap
+```
+
+Or, clone the git repository and install hypershap via the Makefile:
+```sh
+$ git clone https://github.com/automl/hypershap
+$ cd hypershap
 $ make install
 ```
 

@@ -1,3 +1,16 @@
+# v0.0.5
+
+## Features
+- Added seed parameter for controlled pseudo-randomization
+- Dealing with conditions on hyperparameters of configuration spaces
+
+## Improvements
+- Bumped shapiq dependency to most recent version (v1.4.1)
+- Automatically configure approximator with the help of shapiq's helper function.
+
+## Documentation
+- Added installation instructions to README.md for pip install.
+
 # v0.0.4
 - Added pseudorandomization
 - Added index-specific approximation
