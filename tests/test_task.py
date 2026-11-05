@@ -103,6 +103,19 @@ def test_explanation_task_from_function(
     _check_explanation_task(explanation_task, simple_config_space, simple_blackbox_function)
 
 
+def test_explanation_task_from_function_seed_none(
+    simple_config_space: ConfigurationSpace,
+    simple_blackbox_function: SimpleBlackboxFunction,
+) -> None:
+    """from_function with seed=None must not attempt to seed the config space."""
+    explanation_task = ExplanationTask.from_function(
+        simple_config_space,
+        simple_blackbox_function.evaluate,
+        seed=None,
+    )
+    _check_explanation_task(explanation_task, simple_config_space, simple_blackbox_function)
+
+
 def test_multi_data_explanation_task_from_functions(
     multi_data_config_space: ConfigurationSpace,
     multi_data_blackbox_functions: list[LargeBlackboxFunction],

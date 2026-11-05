@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hypershap.task import BaselineExplanationTask
+
 import numpy as np
 from ConfigSpace.exceptions import (
     ActiveHyperparameterNotSetError,
@@ -66,6 +67,48 @@ class ConfigSpaceSearcher(ABC):
         """
         self.explanation_task = explanation_task
         self.mode = mode
+        self.coalition_cache: dict[str, float] = {}
+
+    def _ensure_monotonicity(self, coalition: np.ndarray, value: float) -> float:
+        """Ensure that the value function is monotonically increasing/decreasing depending on whether we want to maximize or minimize respectively.
+
+        Args:
+            coalition: The current coalition.
+            value: The value of the coalition as determined by searching.
+
+        Returns: The monotonicity-ensured value of the coalition.
+
+        """
+        monotone_value = value
+        checked_one = False
+
+        for i in range(len(coalition)):
+            if coalition[i]:  # check whether the entry is True and set it to False to check for a cached result
+                temp_coalition = coalition.copy()
+                temp_coalition[i] = False
+                if str(temp_coalition.tolist()) in self.coalition_cache:
+                    checked_one = True
+                    monotone_value = evaluate_aggregation(
+                        self.mode,
+                        np.array([
+                            monotone_value,
+                            self.coalition_cache[str(temp_coalition.tolist())],
+                        ]),
+                    )
+
+        if not checked_one and coalition.any():
+            logger.warning(
+                "Could not ensure monotonicity as none of the coalitions with one player less has been cached so far.",
+            )
+
+        if value < monotone_value:  # pragma: no cover
+            logger.debug(
+                "Ensured monotonicity with a sub-coalition's value. Increased the value of the current coalition from %s to %s.",
+                value,
+                monotone_value,
+            )
+
+        return monotone_value
 
     @abstractmethod
     def search(self, coalition: np.ndarray) -> float:
@@ -110,9 +153,6 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
             cs.seed(seed)
         sampled_configurations = cs.sample_configuration(size=n_samples)
         self.random_sample = np.array([config.get_array() for config in sampled_configurations])
-
-        # cache coalition values to ensure monotonicity for min/max
-        self.coalition_cache = {}
 
     def _is_valid(self, config: np.ndarray) -> bool:
         """Check whether a configuration is valid with respect to conditions of the configuration space."""
@@ -184,44 +224,3 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
         self.coalition_cache[str(coalition.tolist())] = res
 
         return res
-
-    def _ensure_monotonicity(self, coalition: np.ndarray, value: float) -> float:
-        """Ensure that the value function is monotonically increasing/decreasing depending on whether we want to maximize or minimize respectively.
-
-        Args:
-            coalition: The current coalition.
-            value: The value of the coalition as determined by searching.
-
-        Returns: The monotonicity-ensured value of the coalition.
-
-        """
-        monotone_value = value
-        checked_one = False
-
-        for i in range(len(coalition)):
-            if coalition[i]:  # check whether the entry is True and set it to False to check for a cached result
-                temp_coalition = coalition.copy()
-                temp_coalition[i] = False
-                if str(temp_coalition.tolist()) in self.coalition_cache:
-                    checked_one = True
-                    monotone_value = evaluate_aggregation(
-                        self.mode,
-                        np.array([
-                            monotone_value,
-                            self.coalition_cache[str(temp_coalition.tolist())],
-                        ]),
-                    )
-
-        if not checked_one and coalition.any():
-            logger.warning(
-                "Could not ensure monotonicity as none of the coalitions with one player less has been cached so far.",
-            )
-
-        if value < monotone_value:  # pragma: no cover
-            logger.debug(
-                "Ensured monotonicity with a sub-coalition's value. Increased the value of the current coalition from %s to %s.",
-                value,
-                monotone_value,
-            )
-
-        return monotone_value

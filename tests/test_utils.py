@@ -148,6 +148,18 @@ def test_evaluate_aggregation() -> None:
     assert abs(evaluate_aggregation(Aggregation.VAR, vals) - np.array(AGG_LIST).var()) < EPSILON
 
 
+def test_random_cs_searcher_seed_none(simple_base_et: ExplanationTask) -> None:
+    """RandomConfigSpaceSearcher with seed=None must still draw the requested number of samples."""
+    bet = BaselineExplanationTask(
+        simple_base_et.config_space,
+        simple_base_et.surrogate_model,
+        simple_base_et.config_space.get_default_configuration(),
+    )
+    n_samples = 100
+    searcher = RandomConfigSpaceSearcher(bet, n_samples=n_samples, seed=None)
+    assert searcher.random_sample.shape[0] == n_samples
+
+
 def test_fallback_unfulfilled_conditions(simple_act_base_et: ExplanationTask) -> None:
     """Test the fallback strategy when no configurations are left in random sample after filtering for conditions."""
     bet = BaselineExplanationTask(
