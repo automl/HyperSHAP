@@ -201,7 +201,15 @@ class RandomConfigSpaceSearcher(ConfigSpaceSearcher):
                 )
 
             # predict performance values with the help of the surrogate model for the filtered configurations
-            vals: np.ndarray = np.array(self.explanation_task.get_single_surrogate_model().evaluate(filtered_samples))
+            if len(filtered_samples) > 0:
+                vals: np.ndarray = np.array(
+                    self.explanation_task.get_single_surrogate_model().evaluate(filtered_samples),
+                )
+            else:
+                logger.warning(
+                    "WARNING: After filtering for conditions, no configurations were left, thus, using baseline value.",
+                )
+                vals = np.array([self.search(np.array([False] * len(coalition)))])
         else:
             vals: np.ndarray = np.array(self.explanation_task.get_single_surrogate_model().evaluate(temp_random_sample))
 
