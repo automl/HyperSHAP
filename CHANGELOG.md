@@ -1,3 +1,11 @@
+# v0.0.8
+
+## Features
+- Added a fast mode to tunability that only computes lower-order coalition's value function with the help of the surrogate model.
+
+## Bugfixes
+- Ensured that monotonicity is actually guaranteed.
+
 # v0.0.7
 
 ## Features
