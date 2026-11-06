@@ -9,6 +9,7 @@ import pytest
 if TYPE_CHECKING:
     from ConfigSpace import Configuration, ConfigurationSpace
 
+
 from hypershap import ExplanationTask, HyperSHAP
 
 

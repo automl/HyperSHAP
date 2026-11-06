@@ -43,6 +43,8 @@ class MultiDataHPIGame(AbstractHPIGame):
             game_copy.explanation_task.surrogate_model = surrogate_model
             if isinstance(game_copy, SearchBasedGame):
                 game_copy.cs_searcher.explanation_task.surrogate_model = surrogate_model
+                # cached fast-mode values refer to the base game's surrogate model
+                game_copy.reset_fast_mode_cache()
             if isinstance(game_copy, MultiBaselineAblationGame):
                 for ag in game_copy.ablation_games:
                     ag.explanation_task.surrogate_model = surrogate_model

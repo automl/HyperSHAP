@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from hypershap.games import MultiDataHPIGame
+from hypershap.games.tunability import DEFAULT_FAST_MODE_ORDER
 
 if TYPE_CHECKING:
     from ConfigSpace import Configuration
@@ -242,13 +243,16 @@ class HyperSHAP:
 
         return self.__get_interaction_values(game=ag, index=index, order=order)
 
-    def tunability(
+    def tunability(  # noqa: PLR0913
         self,
         baseline_config: Configuration | None = None,
         index: ValidApproximationIndices = "FSII",
         order: int = 2,
         n_samples: int = 10_000,
         seed: int | None = 0,
+        *,
+        fast_mode: bool = False,
+        fast_mode_order: int = DEFAULT_FAST_MODE_ORDER,
     ) -> InteractionValues:
         """Compute and return the interaction values for tunability analysis.
 
@@ -258,6 +262,10 @@ class HyperSHAP:
             order (int, optional): The order of the interaction values. Defaults to 2.
             n_samples (int, optional): The number of samples to use for simulating HPO. Defaults to 10_000.
             seed (int, optiona): The random seed for simulating HPO. Defaults to 0.
+            fast_mode (bool, optional): Whether to only simulate HPO for coalitions with at most `fast_mode_order`
+                hyperparameters and to assign larger coalitions the maximum value of all their subsets. Defaults to False.
+            fast_mode_order (int, optional): The largest coalition size for which HPO is simulated in fast mode.
+                Defaults to 3.
 
         Returns:
             InteractionValues: The computed interaction values.
@@ -289,6 +297,8 @@ class HyperSHAP:
             ),
             n_workers=self.n_workers,
             verbose=self.verbose,
+            fast_mode=fast_mode,
+            fast_mode_order=fast_mode_order,
         )
 
         if self.explanation_task.is_multi_data():
