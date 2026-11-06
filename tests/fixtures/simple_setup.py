@@ -3,13 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from ConfigSpace import (
-    Configuration,
-    ConfigurationSpace,
-    GreaterThanCondition,
-    LessThanCondition,
-    UniformFloatHyperparameter,
-)
+from ConfigSpace import Configuration, ConfigurationSpace, LessThanCondition, UniformFloatHyperparameter
 
 from hypershap import ExplanationTask
 
@@ -95,33 +89,9 @@ def simple_cond_config_space() -> ConfigurationSpace:
 
 
 @pytest.fixture(scope="session")
-def simple_act_config_space() -> ConfigurationSpace:
-    """Return a simple config space with activation structure for testing."""
-    config_space = ConfigurationSpace()
-    config_space.seed(42)
-
-    a = UniformFloatHyperparameter("a", 0, 1, 0)
-    b = UniformFloatHyperparameter("b", 0, 1, 0)
-    config_space.add(a)
-    config_space.add(b)
-
-    config_space.add(GreaterThanCondition(b, a, 0.3))
-    return config_space
-
-
-@pytest.fixture(scope="session")
 def simple_cond_base_et(
     simple_cond_config_space: ConfigurationSpace,
     simple_blackbox_function: SimpleBlackboxFunction,
 ) -> ExplanationTask:
     """Return a base explanation task for the simple setup with conditions."""
     return ExplanationTask.from_function(simple_cond_config_space, simple_blackbox_function.evaluate)
-
-
-@pytest.fixture(scope="session")
-def simple_act_base_et(
-    simple_act_config_space: ConfigurationSpace,
-    simple_blackbox_function: SimpleBlackboxFunction,
-) -> ExplanationTask:
-    """Return a base explanation task for the simple setup with conditions."""
-    return ExplanationTask.from_function(simple_act_config_space, simple_blackbox_function.evaluate)

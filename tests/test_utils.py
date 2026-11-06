@@ -12,8 +12,6 @@ if TYPE_CHECKING:
     from hypershap import ExplanationTask
     from tests.fixtures.simple_setup import SimpleBlackboxFunction
 
-from ConfigSpace import Configuration
-
 from hypershap.task import BaselineExplanationTask
 from hypershap.utils import Aggregation, RandomConfigSpaceSearcher, evaluate_aggregation
 
