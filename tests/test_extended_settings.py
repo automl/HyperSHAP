@@ -4,18 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
 import pytest
 
 if TYPE_CHECKING:
     from ConfigSpace import Configuration, ConfigurationSpace
 
-    from hypershap.surrogate_model import SurrogateModel
 
 from hypershap import ExplanationTask, HyperSHAP
-from hypershap.games import MultiDataHPIGame, TunabilityGame
-from hypershap.task import TunabilityExplanationTask
-from hypershap.utils import Aggregation, RandomConfigSpaceSearcher
 
 
 @pytest.fixture(scope="module")

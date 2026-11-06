@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
-from ConfigSpace import UniformFloatHyperparameter
+from ConfigSpace import Configuration, UniformFloatHyperparameter
 
 if TYPE_CHECKING:
     from hypershap import ExplanationTask
