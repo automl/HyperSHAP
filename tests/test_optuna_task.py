@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     import optuna as opt
 
 from hypershap import ExplanationTask, HyperSHAP, from_optuna_study  # noqa: E402
-from hypershap.optuna_task import study_to_config_space, study_to_data  # noqa: E402
+from hypershap.optuna_task import _require_optuna, study_to_config_space, study_to_data  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Shared objective (matches SimpleBlackboxFunction: 0.7*a + 2.0*b)
@@ -360,3 +360,112 @@ def test_hypershap_ablation(optuna_hypershap: HyperSHAP, maximize_study: opt.Stu
 
     iv = optuna_hypershap.ablation(config_of_interest=config_of_interest, baseline_config=baseline)
     assert iv is not None
+
+
+# ---------------------------------------------------------------------------
+# _require_optuna
+# ---------------------------------------------------------------------------
+
+
+def test_require_optuna_raises_when_not_installed() -> None:
+    """_require_optuna must raise ImportError with install instructions when optuna is absent."""
+    import sys
+    from unittest.mock import patch
+
+    with patch.dict(sys.modules, {"optuna": None}), pytest.raises(ImportError, match="pip install optuna"):
+        _require_optuna()
+
+
+# ---------------------------------------------------------------------------
+# _distribution_to_hp — step-size warnings
+# ---------------------------------------------------------------------------
+
+
+def test_float_distribution_step_warns() -> None:
+    """FloatDistribution with a step size must trigger a UserWarning."""
+    from optuna.distributions import FloatDistribution  # type: ignore[import-untyped]
+
+    from hypershap.optuna_task import _distribution_to_hp
+
+    dist = FloatDistribution(0.0, 1.0, step=0.1)
+    with pytest.warns(UserWarning, match="step size"):
+        hp = _distribution_to_hp("x", dist)
+    # Step is ignored; bounds must still be transferred correctly.
+    assert hp.lower == pytest.approx(0.0)
+    assert hp.upper == pytest.approx(1.0)
+
+
+def test_int_distribution_step_warns() -> None:
+    """IntDistribution with step != 1 must trigger a UserWarning."""
+    from optuna.distributions import IntDistribution  # type: ignore[import-untyped]
+
+    from hypershap.optuna_task import _distribution_to_hp
+
+    upper = 20
+    dist = IntDistribution(0, upper, step=2)
+    with pytest.warns(UserWarning, match="step size"):
+        hp = _distribution_to_hp("n", dist)
+    assert hp.lower == 0
+    assert hp.upper == upper
+
+
+# ---------------------------------------------------------------------------
+# study_to_data — skipped-trials warning
+# ---------------------------------------------------------------------------
+
+
+def test_study_to_data_skipped_invalid_value_warns() -> None:
+    """study_to_data must skip and warn when a trial's HP value is outside the CS bounds.
+
+    We mock a trial whose params contain all required HP names but with a value
+    that is out of the ConfigSpace bounds, causing Configuration(...) to raise —
+    exercising the except-branch at lines 190-192.
+    """
+    from unittest.mock import MagicMock
+
+    cs = ConfigurationSpace()
+    cs.add(Float("x", bounds=(0.0, 1.0)))
+
+    # A mock trial that passes all filters but whose value is out of CS bounds.
+    mock_trial = MagicMock()
+    mock_trial.state = optuna.trial.TrialState.COMPLETE
+    mock_trial.value = 0.5
+    mock_trial.params = {"x": 999.0}  # way out of [0, 1] → Configuration() raises
+    mock_trial.distributions = {"x": optuna.distributions.FloatDistribution(0.0, 1.0)}  # type: ignore[import-untyped]
+
+    mock_study = MagicMock()
+    mock_study.trials = [mock_trial]
+    mock_study.directions = [optuna.study.StudyDirection.MAXIMIZE]
+
+    with (
+        pytest.warns(UserWarning, match="skipped"),
+        pytest.raises(ValueError, match="No trials could be converted"),
+    ):
+        study_to_data(mock_study, config_space=cs)
+
+
+def test_study_to_data_skipped_missing_hp_warns() -> None:
+    """study_to_data must warn when trials are skipped due to missing HPs.
+
+    We pass a ConfigSpace that contains an extra HP 'z' not present in any
+    trial, so every trial is missing 'z' and gets skipped.  The function must
+    emit a UserWarning about skipped trials and then raise ValueError because
+    no data remains.
+    """
+
+    # Create a tiny real study with one HP "x".
+    def obj(trial: optuna.Trial) -> float:  # type: ignore[name-defined]
+        return trial.suggest_float("x", 0.0, 1.0)
+
+    study = optuna.create_study(direction="maximize")
+    study.optimize(obj, n_trials=5)
+
+    # Build a CS that expects BOTH "x" and "z"; no trial has "z".
+    cs = ConfigurationSpace()
+    cs.add([Float("x", bounds=(0.0, 1.0)), Float("z", bounds=(0.0, 1.0))])
+
+    with (
+        pytest.warns(UserWarning, match="skipped"),
+        pytest.raises(ValueError, match="No trials could be converted"),
+    ):
+        study_to_data(study, config_space=cs)

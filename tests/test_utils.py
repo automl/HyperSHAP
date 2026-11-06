@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
-from ConfigSpace import UniformFloatHyperparameter
+from ConfigSpace import Configuration, UniformFloatHyperparameter
 
 if TYPE_CHECKING:
     from hypershap import ExplanationTask
@@ -144,3 +144,43 @@ def test_evaluate_aggregation() -> None:
     assert evaluate_aggregation(Aggregation.MAX, vals) == AGG_LIST[2]
     assert evaluate_aggregation(Aggregation.AVG, vals) == np.array(AGG_LIST).mean()
     assert abs(evaluate_aggregation(Aggregation.VAR, vals) - np.array(AGG_LIST).var()) < EPSILON
+
+
+def test_random_cs_searcher_seed_none(simple_base_et: ExplanationTask) -> None:
+    """RandomConfigSpaceSearcher with seed=None must still draw the requested number of samples."""
+    bet = BaselineExplanationTask(
+        simple_base_et.config_space,
+        simple_base_et.surrogate_model,
+        simple_base_et.config_space.get_default_configuration(),
+    )
+    n_samples = 100
+    searcher = RandomConfigSpaceSearcher(bet, n_samples=n_samples, seed=None)
+    assert searcher.random_sample.shape[0] == n_samples
+
+
+def test_fallback_unfulfilled_conditions(simple_act_base_et: ExplanationTask) -> None:
+    """Test the fallback strategy when no configurations are left in random sample after filtering for conditions."""
+    bet = BaselineExplanationTask(
+        simple_act_base_et.config_space,
+        simple_act_base_et.surrogate_model,
+        simple_act_base_et.config_space.get_default_configuration(),
+    )
+    rcss = RandomConfigSpaceSearcher(bet)
+    rcss.random_sample = np.array([
+        Configuration(
+            configuration_space=simple_act_base_et.config_space,
+            values={
+                "a": 0.4,
+                "b": 0.1,
+            },
+        ).get_array(),
+        Configuration(
+            configuration_space=simple_act_base_et.config_space,
+            values={
+                "a": 0.5,
+                "b": 0.1,
+            },
+        ).get_array(),
+    ])
+    value = rcss.search(np.array([False, True]))
+    assert value is not None
